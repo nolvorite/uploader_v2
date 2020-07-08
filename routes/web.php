@@ -21,6 +21,7 @@ $this->get('register', 'Auth\RegisterController@showRegistrationForm')->name('au
 $this->post('register', 'Auth\RegisterController@register')->name('auth.register');
 
 Route::group(['middleware' => ['auth'], 'prefix' => 'admin', 'as' => 'admin.'], function () {
+    
     Route::get('/home', 'HomeController@index');
 
     Route::resource('subscriptions', 'Admin\SubscriptionsController');
@@ -40,8 +41,5 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'admin', 'as' => 'admin.'], 
     Route::delete('files_perma_del/{id}', ['uses' => 'Admin\FilesController@perma_del', 'as' => 'files.perma_del']);
     Route::post('/spatie/media/upload', 'Admin\SpatieMediaController@create')->name('media.upload');
     Route::post('/spatie/media/remove', 'Admin\SpatieMediaController@destroy')->name('media.remove');
-
-
-
  
 });

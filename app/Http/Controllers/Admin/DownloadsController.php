@@ -9,17 +9,29 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 use Spatie\MediaLibrary\Media;
 
+use App\User;
+use Spatie\MediaLibrary\HasMedia\HasMediaTrait;
+use Spatie\MediaLibrary\HasMedia\Interfaces\HasMedia;
+use App\Folder;
+
+
 class DownloadsController extends Controller
 {
     public function download($uuid) {
 
         $file = File::where([
-            ['uuid', '=', $uuid],
-            ['created_by_id', '=', Auth::getUser()->id]
+             ['uuid', '=', $uuid]
+            //,['created_by_id', '=', Auth::getUser()->id]
             ])->first();
 
-        $media = Media::where('model_id', $file->id)->first();
-        $pathToFile = storage_path('app' . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $file->id . DIRECTORY_SEPARATOR . $media->file_name );
+        $user = User::where(['id' => $file->created_by_id])->first();
+
+        $media = Media::where('id', $file->id)->first();
+        $folderId = $media['custom_properties']['folder_id'];
+
+        $folder = Folder::where('id', $folderId)->first();
+        
+        $pathToFile = storage_path('app' . "/" . 'public' . "/" . $user->email . "/" . $folder->name . "/" . $media->id . "/" . $media->file_name );
 
         return Response::download($pathToFile);
     }

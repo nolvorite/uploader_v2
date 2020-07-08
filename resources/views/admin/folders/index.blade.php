@@ -1,6 +1,12 @@
 @inject('request', 'Illuminate\Http\Request')
 @extends('layouts.app')
 
+@if(session()->exists('errors')):
+
+{{ session('errors') }}
+
+@endif
+
 @section('content')
     <h3 class="page-title">@lang('quickadmin.folders.title')</h3>
     @can('folder_create')

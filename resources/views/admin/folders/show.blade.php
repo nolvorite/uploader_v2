@@ -45,11 +45,10 @@
                                 @if ( request('show_deleted') != 1 )
                                     <td></td>@endif
                             @endcan
-                            <td field-key='filename'> @foreach($file->getMedia('filename') as $media)
-                                    <p class="form-group">
-                                        <a href="{{url('/admin/' . $file->uuid . '/download')}}" target="_blank">{{ $media->name }} ({{ $media->size }} KB)</a>
+                            <td field-key='filename'><p class="form-group">
+                                        <a href="{{url('/admin/' . $file->uuid . '/download')}}" target="_blank">{{ $file->file_name }} ({{ $file->size }} KB)</a>
                                     </p>
-                                @endforeach</td>
+                                </td>
                             <td field-key='folder'>{{ $file->folder->name or '' }}</td>
                             @if( request('show_deleted') == 1 )
                                 <td>

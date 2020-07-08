@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\FilterByUser;
 use Spatie\MediaLibrary\HasMedia\HasMediaTrait;
 use Spatie\MediaLibrary\HasMedia\Interfaces\HasMedia;
+use App\Media;
 
 /**
  * Class File
@@ -21,8 +22,6 @@ class File extends Model implements HasMedia
 
     protected $fillable = ['uuid', 'folder_id', 'created_by_id'];
     
-    
-
     /**
      * Set to null if empty
      * @param $input
@@ -30,6 +29,10 @@ class File extends Model implements HasMedia
     public function setFolderIdAttribute($input)
     {
         $this->attributes['folder_id'] = $input ? $input : null;
+    }
+
+    public function withMedia(){
+        return $this->hasOne(Media::class, 'id', 'id');
     }
 
     /**

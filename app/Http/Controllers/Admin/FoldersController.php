@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Gate;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreFoldersRequest;
 use App\Http\Requests\Admin\UpdateFoldersRequest;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Input;
 
@@ -72,11 +73,40 @@ class FoldersController extends Controller
         if (! Gate::allows('folder_create')) {
             return abort(401);
         }
-        $folder = Folder::create($request->all());
 
+        $requestD = $request->all();
 
+        $email = auth()->user()->email;
 
-        return redirect()->route('admin.folders.index');
+        $uploadPath = storage_path("app\public\\".$email."\\".$requestD['name']);
+        $uploadPath2 = storage_path("app\public\\".$email."\\");
+
+        if(file_exists($uploadPath)){
+            throw ValidationException::withMessages(['field_name' => 'Directory already exists. Please select another name.']);
+        }else {
+            $isCreated = false;
+            $counter = 0;
+            while($counter < 3 && !$isCreated){
+                try {
+                    mkdir($uploadPath, 0775);
+                    $folder = Folder::create($requestD);
+                    $isCreated = true;
+                }
+                catch (\Exception $e){
+
+                    if(preg_match("#No such file or directory#",$e->getMessage())){
+                        mkdir($uploadPath2, 0775);
+                    }else{
+                        throw ValidationException::withMessages(['field_name' => 'Could not create new folder. Error message: ' . $e->getMessage()]); 
+                    }
+
+                }  
+                $counter++;
+            }
+            
+        }
+
+        return redirect('admin/folders');
     }
 
 
@@ -132,10 +162,12 @@ class FoldersController extends Controller
             return abort(401);
         }
         
-        $created_bies = \App\User::get()->pluck('name', 'id')->prepend(trans('quickadmin.qa_please_select'), '');$files = \App\File::where('folder_id', $id)->get();
+        $created_bies = \App\User::get()->pluck('name', 'id')->prepend(trans('quickadmin.qa_please_select'), '');
+
+        $files = \App\File::join("media","files.id","=","media.id")->where('folder_id', $id)->get();
 
         $folder = Folder::findOrFail($id);
-        $userFilesCount = File::where('created_by_id', Auth::getUser()->id)->count();
+        $userFilesCount = File::join("media","files.id","=","media.id")->where('created_by_id', Auth::getUser()->id)->count();
 
         return view('admin.folders.show', compact('folder', 'files', 'userFilesCount'));
     }

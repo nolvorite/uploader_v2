@@ -7,7 +7,7 @@
                 <div class="panel-heading">@lang('quickadmin.qa_dashboard')</div>
 
                 <div class="panel-body">
-                    @lang('quickadmin.qa_dashboard_text')
+                    @lang('quickadmin.qa_dashboard_text') Welcome, <strong>{{ auth()->user()->email }}</strong>.
                 </div>
             </div>
         </div>

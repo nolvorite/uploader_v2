@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreFilesRequest;
 use App\Http\Requests\Admin\UpdateFilesRequest;
 use App\Http\Controllers\Traits\FileUploadTrait;
+
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Input;
 use Faker\Provider\Uuid;
@@ -40,12 +41,12 @@ class FilesController extends Controller
             if (!Gate::allows('file_delete')) {
                 return abort(401);
             }
-            $files = File::onlyTrashed()->get();
+            $files = File::join("media","files.id","=","media.id")->onlyTrashed()->get();
         } else {
-            $files = File::all();
+            $files = File::join("media","files.id","=","media.id")->get();
         }
-        $user = Auth::getUser();
-        $userFilesCount = File::where('created_by_id', $user->id)->count();
+
+        $userFilesCount = File::count();
 
         return view('admin.files.index', compact('files', 'userFilesCount'));
     }
@@ -85,27 +86,27 @@ class FilesController extends Controller
             return abort(401);
         }
         
-            $request = $this->saveFiles($request);
+            // $request = $this->saveFiles($request);
 
-            $data = $request->all();
-            $fileIds = $request->input('filename_id');
+            // $data = $request->all();
+            // $fileIds = $request->input('filename_id');
 
-            foreach ($fileIds as $fileId) {
-                $file = File::create([
-                    'id' => $fileId,
-                    'uuid' => (string)\Webpatser\Uuid\Uuid::generate(),
-                    'folder_id' => $request->input('folder_id'),
-                    'created_by_id' => Auth::getUser()->id
+            // foreach ($fileIds as $fileId) {
+            //     $file = File::create([
+            //         'id' => $fileId,
+            //         'uuid' => (string)\Webpatser\Uuid\Uuid::generate(),
+            //         'folder_id' => $request->input('folder_id'),
+            //         'created_by_id' => Auth::getUser()->id
 
-                ]);
-            }
+            //     ]);
+            // }
 
-            foreach ($request->input('filename_id', []) as $index => $id) {
-                $model = config('laravel-medialibrary.media_model');
-                $file = $model::find($id);
-                $file->model_id = $file->id;
-                $file->save();
-            }
+            // foreach ($request->input('filename_id', []) as $index => $id) {
+            //     $model = config('laravel-medialibrary.media_model');
+            //     $file = $model::find($id);
+            //     $file->model_id = $file->id;
+            //     $file->save();
+            // }
             return redirect()->route('admin.files.index');
 
     }

@@ -12,6 +12,11 @@
         <div class="panel-body">
             <div class="row">
                 <div class="col-xs-12 form-group">
+                <label class="control-label">Uploading Guide</label>
+                <p>Hello. First select a folder, then pick the files that you want to upload. You will be notified when the files are done uploading.</p>
+                <p>If you have no more files to upload, simply click "Go Back" to see your new files.</p>
+                </div>
+                <div class="col-xs-12 form-group">
                     {!! Form::label('folder_id', trans('quickadmin.files.fields.folder').'*', ['class' => 'control-label']) !!}
                     {!! Form::select('folder_id', $folders, old('folder_id'), ['class' => 'form-control select2', 'required' => '']) !!}
                     <p class="help-block"></p>
@@ -24,14 +29,14 @@
             </div>
             <div class="row">
                 <div class="col-xs-12 form-group">
-                    {!! Form::label('filename', trans('quickadmin.files.fields.filename').'*', ['class' => 'control-label']) !!}
+                    {!! Form::label('filename', trans('quickadmin.files.fields.filename').'*', ['id' => 'upload-form','class' => 'control-label']) !!}
                     {!! Form::file('filename[]', [
                         'multiple',
                         'class' => 'form-control file-upload',
                         'data-url' => route('admin.media.upload'),
                         'data-bucket' => 'filename',
                         'data-filekey' => 'filename',
-                        'id' => 'my_id'
+                        'id' => 'my_id',
                         ]) !!}
                     <p class="help-block"></p>
                     <div class="photo-block">
@@ -49,7 +54,8 @@
         </div>
     </div>
 
-    {!! Form::submit(trans('quickadmin.qa_save'), ['class' => 'btn btn-danger', 'id' => 'submitBtn']) !!}
+    <a href="{{ url('admin/files') }}" class="btn btn-success">Finish Uploading</a>
+
     {!! Form::close() !!}
 @stop
 
@@ -59,74 +65,100 @@
     <script src="{{ asset('quickadmin/plugins/fileUpload/js/jquery.iframe-transport.js') }}"></script>
     <script src="{{ asset('quickadmin/plugins/fileUpload/js/jquery.fileupload.js') }}"></script>
     <script>
-        $(function () {
+        $(document).ready(function () {
+            fileIds = []; 
+
             var exfiles = '<?php echo $userFilesCount; ?>';
             var existingFiles = Number(exfiles);
 
 
-            $('input#my_id').change(function () {
+            $('.file-upload').change(function () {
                 var uploadingFiles = $(this)[0].files;
                 var totalCount = uploadingFiles.length + existingFiles;
 
                 var Id = '<?php echo $roleId; ?>';
                 var roleId = Number(Id);
                 console.log(roleId);
-console.log(totalCount);
-                if (totalCount > 5 && roleId == 2) {
-                    alert("your upload limit is 5 files." +
-                            "Upgrade to Premium and upload as many files you want");
-                    $('.file-upload').each(function () {
-                        var $this = $(this);
+                console.log(totalCount);
+                counter = 0;
+                if($("#folder_id").val() !== ""){
 
-                        $(this).fileupload({
-                            dataType: 'json',
-                            formData: {
-                                model_name: 'File',
-                                bucket: $this.data('bucket'),
-                                file_key: $this.data('filekey'),
-                                _token: '{{ csrf_token() }}'
+                    $(this).fileupload('enable');
 
-                            },
+                    $(this).fileupload('option','formData').folder_id = $("#folder_id").val();
+                    $(this).fileupload('option','formData').folder_id
+                    //fileIds = $(this).fileupload('option','fileIds').file_ids 
+                    // $(this).fileupload('option','fileIds').folderId
+                    $(this).fileupload();
 
-                            add: function (e, data) {
-                                data.abort();
-                            }
-                        })
-                    });
-                    document.getElementById("submitBtn").classList.add('disabled');
+                    // $('.file-upload').each(function () {
+                    //     var $this = $(this);
+
+                    //     $(this).fileupload({
+                    //         dataType: 'json',
+                    //         formData: (function(){ return {
+                    //             model_name: 'File',
+                    //             bucket: $this.data('bucket'),
+                    //             file_key: $this.data('filekey'),
+                    //             _token: '{{ csrf_token() }}',
+                    //             folder_id: $("#folder_id").val()
+                    //         }})(),
+
+                    //         add: function (e, data) {
+                    //             data.abort();
+                    //         }
+                    //     })
+                    // });
+                    
+
+                }else{
+                    alert("Please select a folder first.");
                 }
+                
             });
 
             $('.file-upload').each(function () {
                 var $this = $(this);
                 var $parent = $(this).parent();
 
+                
+
                 $(this).fileupload({
                     dataType: 'json',
-                    formData: {
-                        model_name: 'File',
-                        bucket: $this.data('bucket'),
-                        file_key: $this.data('filekey'),
-                        _token: '{{ csrf_token() }}'
-
-                    },
+                    url: $this.data('url'),
+                    formData: (function(){
+                        console.log($("#folder_id").val());
+                        return {
+                            model_name: 'File',
+                            bucket: $this.data('bucket'),
+                            file_key: $this.data('filekey'),
+                            _token: '{{ csrf_token() }}',
+                            folder_id: $("#folder_id").val()
+                        }
+                    })(),
 
                     add: function (e, data) {
                         data.submit();
                     },
+                    fail: function(e, data){
+                        console.log(data);
+                        alert("Error uploading file. Please try again later.");
+                    },
                     done: function (e, data) {
+                        counter++;
+                        if(counter === data.result.files.length){
+                            alert("All files have finished uploading!");
+                        }
                         $.each(data.result.files, function (index, file) {
                             var $line = $($('<p/>', {class: "form-group"}).html(file.name + ' (' + file.size + ' bytes)').appendTo($parent.find('.files-list')));
-                            $line.append('<a href="#" class="btn btn-xs btn-danger remove-file">Remove</a>');
-                            $line.append('<input type="hidden" name="' + $this.data('bucket') + '_id[]" value="' + file.id + '"/>');
                             if ($parent.find('.' + $this.data('bucket') + '-ids').val() != '') {
                                 $parent.find('.' + $this.data('bucket') + '-ids').val($parent.find('.' + $this.data('bucket') + '-ids').val() + ',');
                             }
                             $parent.find('.' + $this.data('bucket') + '-ids').val($parent.find('.' + $this.data('bucket') + '-ids').val() + file.id);
                         });
                         $parent.find('.progress-bar').hide().css(
-                                'width',
-                                '0%'
+                            'width',
+                            '0%'
                         );
                     }
 
@@ -137,6 +169,8 @@ console.log(totalCount);
                             progress + '%'
                     );
                 });
+
+                $(this).fileupload('disable');
 
             });
             $(document).on('click', '.remove-file', function () {

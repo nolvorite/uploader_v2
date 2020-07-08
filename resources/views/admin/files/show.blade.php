@@ -22,11 +22,11 @@
                         </tr>
                         <tr>
                             <th>@lang('quickadmin.files.fields.filename')</th>
-                            <td field-key='filename's> @foreach($file->getMedia('filename') as $media)
-                                <p class="form-group">
-                                    <a href="{{ $media->getUrl() }}" target="_blank">{{ $media->name }} ({{ $media->size }} KB)</a>
-                                </p>
-                            @endforeach</td>
+                            <td field-key='filename'> 
+                                    <p class="form-group">
+                                        <a href="{{url('/admin/' . $file->uuid . '/download')}}" target="_blank">{{ $file->file_name }} ({{ $file->size }} KB)</a>
+                                    </p>
+                                </td>
                         </tr>
                     </table>
                 </div>

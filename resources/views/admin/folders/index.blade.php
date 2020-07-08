@@ -49,6 +49,10 @@
                     @endcan
 
                     <th>@lang('quickadmin.folders.fields.name')</th>
+                    @if( $view === "all" && Auth::getUser()->role_id === 1 )
+                    <th>Creator</th>
+                    @endif 
+
                     @if( request('show_deleted') == 1 )
                         <th>&nbsp;</th>
                     @else
@@ -70,6 +74,11 @@
                                 @can('folder_view')
                                     <a href="{{ route('admin.folders.show',[$folder->id]) }}">{{$folder->name}}</a></td>
                             @endcan
+
+                            @if( $view === "all" && Auth::getUser()->role_id === 1 )
+                            <td>{{ $folder->email }}</td>
+                            @endif 
+
                             @if( request('show_deleted') == 1 )
                                 <td>
                                     @can('folder_delete')

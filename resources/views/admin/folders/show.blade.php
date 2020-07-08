@@ -28,7 +28,13 @@
                     @endcan
 
                     <th>Filename</th>
+
                     <th>Folder</th>
+
+                    @if( $view === "all" && Auth::getUser()->role_id === 1 )
+                    <th>Creator</th>
+                    @endif 
+
                     @if( request('show_deleted') == 1 )
 
                     @else
@@ -50,6 +56,11 @@
                                     </p>
                                 </td>
                             <td field-key='folder'>{{ $file->folder->name or '' }}</td>
+
+                            @if( $view === "all" && auth()->getUser()->role_id === 1 )
+                            <td field-key='email'>{{ $file->email or '' }}</td>
+                            @endif 
+
                             @if( request('show_deleted') == 1 )
                                 <td>
                                     @can('file_delete')

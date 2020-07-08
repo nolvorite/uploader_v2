@@ -34,16 +34,20 @@ class FoldersController extends Controller
             }
         }
 
+        $default = auth()->user()->role_id === 1 ? 'all' : 'my';
+
+        $view = Input::get('filter') ? Input::get('filter') : $default;
+
         if (request('show_deleted') == 1) {
             if (! Gate::allows('folder_delete')) {
                 return abort(401);
             }
-            $folders = Folder::onlyTrashed()->get();
+            $folders = Folder::select('folders.name', 'users.name as users_name','folders.id as id','users.id as user_id','created_by_id','email')->join("users","users.id","=","created_by_id")->onlyTrashed()->get();
         } else {
-            $folders = Folder::all();
+            $folders = Folder::select('folders.name', 'users.name as users_name','folders.id as id','users.id as user_id','created_by_id','email')->join("users","users.id","=","created_by_id")->get();
         }
 
-        return view('admin.folders.index', compact('folders'));
+        return view('admin.folders.index', compact('folders','view'));
     }
 
     /**
@@ -164,10 +168,10 @@ class FoldersController extends Controller
         
         $created_bies = \App\User::get()->pluck('name', 'id')->prepend(trans('quickadmin.qa_please_select'), '');
 
-        $files = \App\File::join("media","files.id","=","media.id")->where('folder_id', $id)->get();
+        $files = \App\File::join("media","files.id","=","media.id")->join("users","users.id","=","created_by_id")->where('folder_id', $id)->get();
 
         $folder = Folder::findOrFail($id);
-        $userFilesCount = File::join("media","files.id","=","media.id")->where('created_by_id', Auth::getUser()->id)->count();
+        $userFilesCount = File::join("media","files.id","=","media.id")->join("users","users.id","=","created_by_id")->where('created_by_id', Auth::getUser()->id)->count();
 
         return view('admin.folders.show', compact('folder', 'files', 'userFilesCount'));
     }

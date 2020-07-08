@@ -37,18 +37,22 @@ class FilesController extends Controller
             }
         }
 
+        $default = auth()->user()->role_id === 1 ? 'all' : 'my';
+
+        $view = Input::get('filter') ? Input::get('filter') : $default;
+
         if (request('show_deleted') == 1) {
             if (!Gate::allows('file_delete')) {
                 return abort(401);
             }
-            $files = File::join("media","files.id","=","media.id")->onlyTrashed()->get();
+            $files = File::join("media","files.id","=","media.id")->join("users","users.id","=","created_by_id")->onlyTrashed()->get();
         } else {
-            $files = File::join("media","files.id","=","media.id")->get();
+            $files = File::join("media","files.id","=","media.id")->join("users","users.id","=","created_by_id")->get();
         }
 
         $userFilesCount = File::count();
 
-        return view('admin.files.index', compact('files', 'userFilesCount'));
+        return view('admin.files.index', compact('files', 'userFilesCount','view'));
     }
 
     /**

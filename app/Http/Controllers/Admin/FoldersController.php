@@ -173,7 +173,11 @@ class FoldersController extends Controller
         $folder = Folder::findOrFail($id);
         $userFilesCount = File::join("media","files.id","=","media.id")->join("users","users.id","=","created_by_id")->where('created_by_id', Auth::getUser()->id)->count();
 
-        return view('admin.folders.show', compact('folder', 'files', 'userFilesCount'));
+        $default = auth()->user()->role_id === 1 ? 'all' : 'my';
+
+        $view = Input::get('filter') ? Input::get('filter') : $default;
+
+        return view('admin.folders.show', compact('folder', 'files', 'view' ,'userFilesCount'));
     }
 
 

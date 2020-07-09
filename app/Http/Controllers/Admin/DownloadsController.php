@@ -31,7 +31,7 @@ class DownloadsController extends Controller
 
         $folder = Folder::where('id', $folderId)->first();
         
-        $pathToFile = storage_path('app' . "/" . 'public' . "/" . $user->email . "/" . $folder->name . "/" . $media->id . "/" . $media->file_name );
+        $pathToFile = storage_path('app' . "/" . 'public' . "/" . $user->email . "/" . $folder->name . "/" . $media->file_name );
 
         return Response::download($pathToFile);
     }

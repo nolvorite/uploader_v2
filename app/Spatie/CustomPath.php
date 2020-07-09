@@ -19,7 +19,7 @@ class CustomPath implements PathGenerator
         $folderName = $folderData->name;
 
         $email = auth()->user()->email;
-        return $email."/". $folderName ."/".$media->id."/";
+        return $email."/". $folderName ."/";
     }
 
     /*
@@ -31,7 +31,7 @@ class CustomPath implements PathGenerator
         $folderName = $folderData->name;
 
         $email = auth()->user()->email;
-        return $email."/". $folderName ."/".$media->id."/conversions/";
+        return $email."/". $folderName ."/conversions/";
     }
 
     /*

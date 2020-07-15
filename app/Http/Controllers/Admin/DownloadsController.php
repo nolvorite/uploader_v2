@@ -6,7 +6,9 @@ use App\File;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File as FileViewer;
 use Illuminate\Support\Facades\Response;
+
 use Spatie\MediaLibrary\Media;
 
 use App\User;
@@ -33,6 +35,17 @@ class DownloadsController extends Controller
         
         $pathToFile = storage_path('app' . "/" . 'public' . "/" . $user->email . "/" . $folder->name . "/" . $media->file_name );
 
-        return Response::download($pathToFile);
+        $attributes = $media->getAttributes();
+
+        switch($attributes['mime_type']){
+            case "text/html":
+                $returnVal = FileViewer::get($pathToFile);
+            break;
+            default:
+                $returnVal = Response::download($pathToFile);
+            break;
+        }
+
+        return $returnVal;
     }
 }

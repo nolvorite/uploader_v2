@@ -24,7 +24,7 @@
                             <th>@lang('quickadmin.files.fields.filename')</th>
                             <td field-key='filename'> 
                                     <p class="form-group">
-                                        <a href="{{url('/admin/' . $file->uuid . '/download')}}" target="_blank">{{ $file->file_name }} ({{ $file->size }} KB)</a>
+                                        <a href="{{url('/storage/' . $file->created_by->email . '/'. $file->folder->name .'/' . $file->file_name )}}" target="_blank">{{ $file->file_name }} ({{ $file->size }} KB)</a>
                                     </p>
                                 </td>
                         </tr>

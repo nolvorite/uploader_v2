@@ -75,7 +75,7 @@ class FoldersController extends Controller
         if($legitFolderName && file_exists($uploadingUnderFolderPath) && !file_exists($uploadingPath)){
             //check to see if they have permission to upload to this folder
             //either admin or matching email address for subfolder
-            $splitter = explode("/",$path);
+            $splitter = explode("\\",$path);
             //first folder will ALWAYS be an email address
             $roleCheck = auth()->user()->role_id <= 1;
             $returnVal['checks'] = [$splitter,auth()->user()->email];

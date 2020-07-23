@@ -88,7 +88,7 @@
 
             
 
-            if(loadedFolderId !== null){
+            if(typeof loadedFolderId !== "undefined"){
                 
                 $("#folder_id").select2().val(loadedFolderId).trigger("change.select2");
 

@@ -69,7 +69,7 @@
                             @endcan
                             <td field-key='filename'> 
                                     <p class="form-group">
-                                        <a href="{{url('/storage/' . $file->folder_creator . '/'. $file->folder_name .'/' . $file->file_name )}}" target="_blank">{{ $file->file_name }} ({{ $file->size }} KB)</a><br>
+                                        <a href="{{url('/storage/' . $file->folder_creator . '/'. $file->folder_name .'/' . $file->relative_path .'/'. $file->file_name )}}" target="_blank">{{ $file->file_name }} ({{ $file->size }} KB)</a><br>
                                         <span><strong>Full Path:</strong> <span class='full_path'><a href="{{ url('admin/files?currentBasePath='.$file->path) }}">{{$file->path}}</a> </span></span><br>
                                         <span><strong>Time Created:</strong> <span class='time_created'>{{ $file->created_at }}</span></span>
                                     </p>

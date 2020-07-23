@@ -2,41 +2,42 @@
 @extends('layouts.app')
 
 @section('content')
-    <h3 class="page-title">@lang('quickadmin.files.title')</h3>
-    @can('file_create')
-        <p>
 
-            @if (Auth::getUser()->role_id == 2 && $userFilesCount >= 5)
-                <a href="{{ route('admin.files.create') }}" class="btn btn-success disabled">@lang('quickadmin.qa_add_new')</a>
-                <a href="{{url('/admin/subscriptions')}}" class="btn btn-primary">Upgrade plan to Premium for $9.99/month</a>
-            @else
-                <a href="{{ route('admin.files.create') }}" class="btn btn-success">@lang('quickadmin.qa_add_new')</a>
-            @endif
-            @if(!is_null(Auth::getUser()->role_id) && config('quickadmin.can_see_all_records_role_id') == Auth::getUser()->role_id)
-                @if(Session::get('File.filter', 'all') == 'my')
-                    <a href="?filter=all" class="btn btn-default">Show all records</a>
-                @else
-                    <a href="?filter=my" class="btn btn-default">Filter my records</a>
-                @endif
-            @endif
-        </p>
-    @endcan
 
-    @can('file_delete')
-        <p>
-        <ul class="list-inline">
-            <li><a href="{{ route('admin.files.index') }}" style="{{ request('show_deleted') == 1 ? '' : 'font-weight: 700' }}">@lang('quickadmin.qa_all')</a></li>
+    <h3 class="page-title">@lang('quickadmin.files.title') @can('file_delete')<small>(<strong>Viewing:</strong> 
+    
+        
+              <a href="{{ route('admin.files.index') }}" style="{{ request('show_deleted') == 1 ? '' : 'font-weight: 700' }}">@lang('quickadmin.qa_all')</a>
             |
-            <li><a href="{{ route('admin.files.index') }}?show_deleted=1" style="{{ request('show_deleted') == 1 ? 'font-weight: 700' : '' }}">@lang('quickadmin.qa_trash')</a></li>
-        </ul>
-        </p>
-    @endcan
+            <a href="{{ route('admin.files.index') }}?show_deleted=1" style="{{ request('show_deleted') == 1 ? 'font-weight: 700' : '' }}">@lang('quickadmin.qa_trash')</a>
+        
+        
+    )</small>@endcan</h3>
 
+    <div>
+
+    @can('file_create')
+            <a href="{{ route('admin.files.create') }}" class="btn btn-success">@lang('quickadmin.qa_add_new')</a>
+           @if(!is_null(Auth::getUser()->role_id) && config('quickadmin.can_see_all_records_role_id') == Auth::getUser()->role_id)
+        @if(Session::get('File.filter', 'all') == 'my')
+            <a href="?filter=all" class="btn btn-default">Show all records</a>
+             
+        @else
+            <a href="?filter=my" class="btn btn-default">Filter my records</a>
+        @endif
+    @endif
+        
+    @endcan
+   
+    </div>
+
+
+@include('partials.directorybrowser')
 
     <div class="panel panel-default">
-        <div class="panel-heading">
-            @lang('quickadmin.qa_list')
-        </div>
+
+    <div class="panel-heading">
+            List        </div>
 
         <div class="panel-body table-responsive">
             <table class="table table-bordered table-striped {{ count($files) > 0 ? 'datatable' : '' }} @can('file_delete') @if ( request('show_deleted') != 1 ) dt-select @endif @endcan">
@@ -48,15 +49,12 @@
                     @endcan
 
                     <th>Filename</th>
-                    <th>Folder</th>
+                    <th>Main Folder</th>
                     @if( $view === "all" && Auth::getUser()->role_id === 1 )
                     <th>Creator</th>
                     @endif 
-                    @if( request('show_deleted') == 1 )
-                        <th>&nbsp;</th>
-                    @else
-                        <th>&nbsp;</th>
-                    @endif
+                    <th>&nbsp;</th>
+  
                 </tr>
                 </thead>
 
@@ -71,10 +69,12 @@
                             @endcan
                             <td field-key='filename'> 
                                     <p class="form-group">
-                                        <a href="{{url('/storage/' . $file->created_by->email . '/'. $file->folder->name .'/' . $file->file_name )}}" target="_blank">{{ $file->file_name }} ({{ $file->size }} KB)</a>
+                                        <a href="{{url('/storage/' . $file->folder_creator . '/'. $file->folder_name .'/' . $file->file_name )}}" target="_blank">{{ $file->file_name }} ({{ $file->size }} KB)</a><br>
+                                        <span><strong>Full Path:</strong> <span class='full_path'><a href="{{ url('admin/files?currentBasePath='.$file->path) }}">{{$file->path}}</a> </span></span><br>
+                                        <span><strong>Time Created:</strong> <span class='time_created'>{{ $file->created_at }}</span></span>
                                     </p>
                                 </td>
-                            <td field-key='folder'>{{ $file->folder->name or '' }}</td>
+                            <td field-key='folder'><a href="{{url('admin/files?currentBasePath='.$file->folder_creator.'/'.$file->folder_name)}}">{{ $file->folder_name }}</td>
 
                             @if( $view === "all" && Auth::getUser()->role_id === 1 )
                             <td field-key='email'>{{ $file->email or '' }}</td>
@@ -116,7 +116,7 @@
 
                             @else
                                 <td>
-                                    <a href="{{url('/storage/' . $file->created_by->email . '/'. $file->folder->name .'/' . $file->file_name )}}" class="btn btn-xs btn-success">Download</a>
+                                    <a href="{{url('/storage/' . $file->folder_creator . '/'. $file->folder_name .'/' . $file->file_name )}}" class="btn btn-xs btn-success">Download</a>
                                     @can('file_delete')
                                         {!! Form::open(array(
                                                                                 'style' => 'display: inline-block;',

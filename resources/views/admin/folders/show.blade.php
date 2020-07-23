@@ -1,16 +1,14 @@
 @extends('layouts.app')
 
 @section('content')
-    <h3 class="page-title">{{$folder->name}}</h3>
+    <h3 class="page-title">{{$folder->email}}/{{$folder->name}}</h3>
     <p>
 
-        @if (Auth::getUser()->role_id == 2 && $userFilesCount > 5)
-            <a href="{{url('admin/files/create?folder_id=' . $folder->id)}}" class="btn btn-success disabled">Add file to this Folder</a>
-            <a href="{{url('/admin/subscriptions')}}" class="btn btn-primary">Upgrade plan to Premium for $9.99/month</a>
-        @else
-            <a href="{{url('admin/files/create?folder_id=' . $folder->id)}}" class="btn btn-success">Add New File to this Folder</a>
-        @endif
+
+    <a href="{{url('admin/files/create?folder_id=' . $folder->id)}}" class="btn btn-success">Add file to this Folder</a>
+  
     </p>
+    @include('partials.directorybrowser')
     <div class="panel panel-default">
         <div class="panel-heading">
             Files
@@ -29,17 +27,11 @@
 
                     <th>Filename</th>
 
-                    <th>Folder</th>
-
                     @if( $view === "all" && Auth::getUser()->role_id === 1 )
                     <th>Creator</th>
                     @endif 
-
-                    @if( request('show_deleted') == 1 )
-
-                    @else
-                        <th>&nbsp;</th>
-                    @endif
+<th>&nbsp;</th>
+                   
                 </tr>
                 </thead>
 
@@ -51,18 +43,31 @@
                                 @if ( request('show_deleted') != 1 )
                                     <td></td>@endif
                             @endcan
-                            <td field-key='filename'><p class="form-group">
-                                        <a href="{{url('/storage/' . $file->created_by->email . '/'. $file->folder->name .'/' . $file->file_name )}}" target="_blank">{{ $file->file_name }} ({{ $file->size }} KB)</a>
+                            <td field-key='filename'> 
+                                    <p class="form-group">
+                                        <a href="{{url('/storage/' . $file->folder_creator . '/'. $file->folder_name .'/' . $file->file_name )}}" target="_blank">{{ $file->file_name }} ({{ $file->size }} KB)</a><br>
+                                        <span><strong>Full Path:</strong> <span class='full_path'><a href="{{ url('admin/files?currentBasePath='.$file->path) }}">{{$file->path}}</a> </span></span><br>
+                                        <span><strong>Time Created:</strong> <span class='time_created'>{{ $file->created_at }}</span></span>
                                     </p>
                                 </td>
-                            <td field-key='folder'>{{ $file->folder->name or '' }}</td>
 
                             @if( $view === "all" && auth()->getUser()->role_id === 1 )
                             <td field-key='email'>{{ $file->email or '' }}</td>
                             @endif 
 
-                            @if( request('show_deleted') == 1 )
+                             @if( request('show_deleted') == 1 )
                                 <td>
+                                    @if (Auth::getUser()->role_id == 2 && $userFilesCount >= 5)
+                                        @can('file_delete')
+                                            {!! Form::open(array(
+            'style' => 'display: inline-block;',
+            'method' => 'DELETE',
+            'onsubmit' => "return confirm('".trans("quickadmin.qa_are_you_sure")."');",
+            'route' => ['admin.files.perma_del', $file->id])) !!}
+                                            {!! Form::submit(trans('quickadmin.qa_permadel'), array('class' => 'btn btn-xs btn-danger')) !!}
+                                            {!! Form::close() !!}
+                                        @endcan
+                                    @else
                                     @can('file_delete')
                                         {!! Form::open(array(
         'style' => 'display: inline-block;',
@@ -81,10 +86,12 @@
                                         {!! Form::submit(trans('quickadmin.qa_permadel'), array('class' => 'btn btn-xs btn-danger')) !!}
                                         {!! Form::close() !!}
                                     @endcan
+                                        @endif
                                 </td>
+
                             @else
                                 <td>
-                                    <a href="{{url('/storage/' . $file->created_by->email . '/'. $file->folder->name .'/' . $file->file_name )}}" class="btn btn-xs btn-success">Download</a>
+                                    <a href="{{url('/storage/' . $file->folder_creator . '/'. $file->folder_name .'/' . $file->file_name )}}" class="btn btn-xs btn-success">Download</a>
                                     @can('file_delete')
                                         {!! Form::open(array(
                                                                                 'style' => 'display: inline-block;',
@@ -116,3 +123,10 @@
 
 
 @stop
+@section('javascript')
+    @parent
+    <script type="text/javascript">
+        folderData = $.parseJSON('{!! json_encode($folder) !!}');
+
+    </script>
+@endsection

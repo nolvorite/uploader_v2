@@ -41,3 +41,31 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/jquery-ui-timepicker-addon/1.4.5/jquery-ui-timepicker-addon.min.css"/>
 <link rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.0/css/bootstrap-datepicker.standalone.min.css"/>
+
+<style type="text/css">
+     .form-inline.dropdown-segment {
+          display: inline-block;
+      }
+
+      .dropdown-segment .dropdown-menu{max-height: 250px; overflow: auto; padding: 3px;}
+
+      .btn-group .dropdown-segment .btn{border-left-width:0;border-radius: 0;}
+      .btn-group .dropdown-segment .btn:hover,.btn-group .dropdown-segment .btn[aria-expanded=true]{border-left-width:1px;margin-left:-1px}
+      .btn-group .dropdown-segment:first-child .btn{border-radius: 5px 0px 0px 5px;border-left-width:1px}
+      .btn-group .dropdown-segment:first-child .btn:hover,.btn-group .dropdown-segment:first-child .btn[aria-expanded=true]{margin-left:0}
+      .btn-group .dropdown-segment.rightclip .btn{border-radius: 0px 5px 5px 0px;border-right-width:1px}
+
+      li{word-wrap: break-word;}
+
+</style>
+
+@if(Auth::check())
+
+<script type="text/javascript">
+    const isAnAdmin = {{ (auth()->user()->role_id === 1) ? 'true' : 'false' }};
+    const rootFolder = "";
+    const userEmail = "{{auth()->user()->email}}";
+    const levelOfSubFolderCreation = 3;
+</script>
+
+@endif

@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Input;
 use Faker\Provider\Uuid;
 
+
+
 class FilesController extends Controller
 {
     use FileUploadTrait;
@@ -39,18 +41,42 @@ class FilesController extends Controller
 
         $default = auth()->user()->role_id === 1 ? 'all' : 'my';
 
-        $view = Input::get('filter') ? Input::get('filter') : $default;
+        $view = $default;
+
+        $basePathCheck = Input::get('currentBasePath') !== null ? Input::get('currentBasePath') : null;
+
+
+
+        $selector = $this->fileTable();
+
+        switch($view){
+            case "all":
+                //
+            break;
+            case "my":
+                $selector = $selector->where('f.created_by_id',auth()->user()->id);
+            break;
+        }
 
         if (request('show_deleted') == 1) {
             if (!Gate::allows('file_delete')) {
                 return abort(401);
             }
-            $files = File::join("media","files.id","=","media.id")->join("users","users.id","=","created_by_id")->onlyTrashed()->get();
-        } else {
-            $files = File::join("media","files.id","=","media.id")->join("users","users.id","=","created_by_id")->get();
+            $files = $selector->whereNotNull("deleted_at");
+        } 
+
+
+        if($basePathCheck !== null){
+            $splitter = explode("/",$basePathCheck);
+            $files = $selector->where('path','like',$basePathCheck.'%');
+            if($files->get()->count() === 0){
+                return redirect('admin/files');
+            }
         }
 
-        $userFilesCount = File::count();
+        $files = $selector->get();
+
+        $userFilesCount = $files->count();
 
         return view('admin.files.index', compact('files', 'userFilesCount','view'));
     }
@@ -60,7 +86,7 @@ class FilesController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Request $request)
     {
         if (!Gate::allows('file_create')) {
             return abort(401);
@@ -68,14 +94,14 @@ class FilesController extends Controller
         
         $roleId = Auth::getUser()->role_id;
         $userFilesCount = File::where('created_by_id', Auth::getUser()->id)->count();
-        if ($roleId == 2 && $userFilesCount > 5) {
-            return redirect('/admin/files');
-        }
 
-        $folders = \App\Folder::get()->pluck('name', 'id')->prepend(trans('quickadmin.qa_please_select'), '');
-        $created_bies = \App\User::get()->pluck('name', 'id')->prepend(trans('quickadmin.qa_please_select'), '');
+        $folderId = $request->folder_id !== null ? intval($request->folder_id) : null;
 
-        return view('admin.files.create', compact('folders', 'created_bies', 'userFilesCount', 'roleId'));
+
+        $created_bies = \App\User::get()->pluck('name','id')->prepend(trans('quickadmin.qa_please_select'), '');
+        $folders = \App\Folder::select("users.email","folders.name","folders.id")->join("users","folders.created_by_id","=","users.id")->get();
+
+        return view('admin.files.create', compact('folders', 'created_bies', 'userFilesCount', 'roleId', 'folderId'));
     }
 
     /**

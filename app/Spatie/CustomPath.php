@@ -18,8 +18,12 @@ class CustomPath implements PathGenerator
         $folderData = DB::table('folders')->where('id', $media->getCustomProperty('folder_id'))->first();
         $folderName = $folderData->name;
 
-        $email = auth()->user()->email;
-        return $email."/". $folderName ."/";
+        $relativePath = $media->getCustomProperty('relativePath');
+        
+        $userData = DB::table('users')->where('id', $folderData->created_by_id)->first();
+        $email =  $userData->email;
+        
+        return $email."/". $folderName ."/".$relativePath . "/";
     }
 
     /*

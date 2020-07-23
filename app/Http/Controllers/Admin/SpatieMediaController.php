@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB as DB;
 use App\Http\Requests\Admin\StoreFilesRequest;
 use App\Http\Requests\Admin\UpdateFilesRequest;
 use App\Http\Controllers\Traits\FileUploadTrait;
@@ -46,30 +47,55 @@ class SpatieMediaController extends Controller
         $addedFiles = [];
         $folderId = intval($request->input('folder_id'));
         $email = auth()->user()->email;
-        $uploadSucceededWithoutErrors = true;
-        foreach ($files as $file) {
-            try {
-                $model->exists     = true;
-                $media             = $model->addMedia($file)->withCustomProperties(['folder_id' => $folderId])->toMediaCollection($email);
+        $path = $request->path;
+        $croppedPathForEmailCheck = substr($path,0,strlen($email));
+        $comparison = $email === $croppedPathForEmailCheck;
+        $returnVal = ['error' => ''];        
 
-                $file = File::create([
-                    'id' => $media['id'],
-                    'uuid' => (string) \Webpatser\Uuid\Uuid::generate(),
-                    'folder_id' => $folderId,
-                    'created_by_id' => Auth::getUser()->id
-                ]);
+        if(auth()->user()->role_id === 1 || $comparison){
+            $uploadSucceededWithoutErrors = true;
+            foreach ($files as $file) {
+                try {
+                    $model->exists     = true;
 
-                $addedFiles[]      = $media;
-            } catch (\Exception $e) {
-                $uploadSucceededWithoutErrors = false;
-                abort(500, 'Could not upload your file:' . $e->getMessage());
+                    $folderData = DB::table('folders')->where('id', $folderId)->first();
+                    $folderName = $folderData->name;
+                    
+                    $userData = DB::table('users')->where('id', $folderData->created_by_id)->first();
+                    $email =  $userData->email;
+
+                    $basicPath = $email . "/" . $folderName;
+
+                    $relativePath = substr($path,strlen($basicPath)+1) === false ? "" : substr($path,strlen($basicPath)+1);
+
+                    $media = $model->addMedia($file)->withCustomProperties(['folder_id' => $folderId,'relativePath'=> $relativePath])->toMediaCollection($email);
+
+                    
+
+                    $file = DB::table('files')->insert([
+                        'id' => $media['id'],
+                        'uuid' => (string) \Webpatser\Uuid\Uuid::generate(),
+                        'folder_id' => $folderId,
+                        'path' => $path,
+                        'relative_path' => $relativePath,
+                        'created_at'=>DB::raw('NOW()'),
+                        'updated_at'=>DB::raw('NOW()'),
+                        'created_by_id' => Auth::getUser()->id
+                    ]);
+
+                    $addedFiles[] = $media;
+                } catch (\Exception $e) {
+                    $uploadSucceededWithoutErrors = false;
+                    $returnVal['error'] = $e->getMessage();
+                }
             }
+
+        }else{
+            $returnVal['error'] = "You do not have sufficient privileges to upload in this directory.";
         }
 
-        if($uploadSucceededWithoutErrors){
-            //$request2 = $this->saveFiles($request2);
-         }
+        $returnVal['files'] = $addedFiles;
 
-        return response()->json(['files' => $addedFiles]);
+        return response()->json($returnVal);
     }
 }

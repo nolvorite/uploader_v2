@@ -31,10 +31,16 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'admin', 'as' => 'admin.'], 
     Route::resource('users', 'Admin\UsersController');
     Route::post('users_mass_destroy', ['uses' => 'Admin\UsersController@massDestroy', 'as' => 'users.mass_destroy']);
     Route::resource('folders', 'Admin\FoldersController');
+
     Route::post('folders_mass_destroy', ['uses' => 'Admin\FoldersController@massDestroy', 'as' => 'folders.mass_destroy']);
+    Route::post('get_all_folders', ['uses' => 'Admin\FoldersController@getFolderList', 'as' => 'folders.get_list']);
+    Route::post('add_subfolder', ['uses' => 'Admin\FoldersController@addSubFolder', 'as' => 'folders.add_subfolder']);
+    Route::post('basic_list', ['uses' => 'Admin\FoldersController@getListOfFiles', 'as' => 'folders.basic_list']);
     Route::post('folders_restore/{id}', ['uses' => 'Admin\FoldersController@restore', 'as' => 'folders.restore']);
+
     Route::delete('folders_perma_del/{id}', ['uses' => 'Admin\FoldersController@perma_del', 'as' => 'folders.perma_del']);
     Route::resource('files', 'Admin\FilesController');
+    //Route::post('folders/getFolderList', ['uses' => 'Admin\FoldersController@getFolderList', 'as' => 'folders.getFolderList']);
     Route::get('/{uuid}/download', 'Admin\DownloadsController@download');
     Route::post('files_mass_destroy', ['uses' => 'Admin\FilesController@massDestroy', 'as' => 'files.mass_destroy']);
     Route::post('files_restore/{id}', ['uses' => 'Admin\FilesController@restore', 'as' => 'files.restore']);

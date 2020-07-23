@@ -23,12 +23,19 @@
 <script src="{{ url('adminlte/js') }}/select2.full.min.js"></script>
 <script src="{{ url('adminlte/js') }}/main.js"></script>
 
+
+
 <script src="{{ url('adminlte/plugins/slimScroll/jquery.slimscroll.min.js') }}"></script>
 <script src="{{ url('adminlte/plugins/fastclick/fastclick.js') }}"></script>
 <script src="{{ url('adminlte/js/app.min.js') }}"></script>
-<script>
+
+<script type="text/javascript">
+
+    siteUrl = "{{url('')}}/";
     window._token = '{{ csrf_token() }}';
+    
 </script>
+<script src="{{ url('js/folderbrowser.js') }}"></script>
 <script>
     $.extend(true, $.fn.dataTable.defaults, {
         "language": {

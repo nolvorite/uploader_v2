@@ -18,7 +18,13 @@
                 </div>
                 <div class="col-xs-12 form-group">
                     {!! Form::label('folder_id', trans('quickadmin.files.fields.folder').'*', ['class' => 'control-label']) !!}
-                    {!! Form::select('folder_id', $folders, old('folder_id'), ['class' => 'form-control select2', 'required' => '']) !!}
+                    <select class="form-control select2" required="" id="folder_id" name="folder_id">
+                        <option selected disabled>Please select...</option>
+                        @foreach($folders as $folder)
+                            <option value="{{ $folder->id }}">{{ $folder->email }}/{{ $folder->name }}</option>
+                        @endforeach
+                    </select>
+
                     <p class="help-block"></p>
                     @if($errors->has('folder_id'))
                         <p class="help-block">
@@ -27,9 +33,15 @@
                     @endif
                 </div>
             </div>
+            <div class="row hide" id="subfolder_view">
+                <div class="col-xs-12 form-group">
+                    {!! Form::label('folder_id', 'Subfolder (Optional)', ['class' => 'control-label']) !!}
+                    @include('partials/directorybrowser',['purpose' => 'create_files'])
+                </div>
+            </div>
             <div class="row">
                 <div class="col-xs-12 form-group">
-                    {!! Form::label('filename', trans('quickadmin.files.fields.filename').'*', ['id' => 'upload-form','class' => 'control-label']) !!}
+                    {!! Form::label('filename', 'Files', ['id' => 'upload-form','class' => 'control-label']) !!}
                     {!! Form::file('filename[]', [
                         'multiple',
                         'class' => 'form-control file-upload',
@@ -65,11 +77,30 @@
     <script src="{{ asset('quickadmin/plugins/fileUpload/js/jquery.iframe-transport.js') }}"></script>
     <script src="{{ asset('quickadmin/plugins/fileUpload/js/jquery.fileupload.js') }}"></script>
     <script>
+        @if($folderId !== null)
+            var loadedFolderId = {{ $folderId }};
+        @endif
         $(document).ready(function () {
             fileIds = []; 
 
             var exfiles = '<?php echo $userFilesCount; ?>';
             var existingFiles = Number(exfiles);
+
+            
+
+            if(loadedFolderId !== null){
+                
+                $("#folder_id").select2().val(loadedFolderId).trigger("change.select2");
+
+            }
+
+            $("#folder_id").select2().on("select2:select",function(e){
+                data= e.params.data;
+                console.log(data,e);
+                $("#subfolder_view").removeClass("hide");
+
+                clickToPath(data.text);
+            });
 
 
             $('.file-upload').change(function () {
@@ -86,7 +117,7 @@
                     $(this).fileupload('enable');
 
                     $(this).fileupload('option','formData').folder_id = $("#folder_id").val();
-                    $(this).fileupload('option','formData').folder_id
+                    $(this).fileupload('option','formData').path = fullPath;
                     //fileIds = $(this).fileupload('option','fileIds').file_ids 
                     // $(this).fileupload('option','fileIds').folderId
                     $(this).fileupload();
@@ -133,7 +164,8 @@
                             bucket: $this.data('bucket'),
                             file_key: $this.data('filekey'),
                             _token: '{{ csrf_token() }}',
-                            folder_id: $("#folder_id").val()
+                            folder_id: $("#folder_id").val(),
+                            path: fullPath
                         }
                     })(),
 
@@ -160,6 +192,7 @@
                             'width',
                             '0%'
                         );
+                        getListOfFiles(fullPath);
                     }
 
                 }).on('fileuploadprogressall', function (e, data) {

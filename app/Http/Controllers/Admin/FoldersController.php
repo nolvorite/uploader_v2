@@ -13,6 +13,9 @@ use App\Http\Requests\Admin\UpdateFoldersRequest;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB as DB;
+
 
 class FoldersController extends Controller
 {
@@ -50,11 +53,147 @@ class FoldersController extends Controller
         return view('admin.folders.index', compact('folders','view'));
     }
 
+    public function listOfFilesBasic(Request $request){
+
+    }
+
+    public function addSubFolder(Request $request){
+        $returnVal = ['status' => false, 'errors' => ''];
+        $path = $request->path;
+        $folderName = $request->name;
+        $legitFolderName = true;
+        $isCreated = false;
+        $path = preg_replace("#/#","\\",$path);
+
+        $uploadingUnderFolderPath = storage_path("app\public\\".$path);
+        $uploadingPath = storage_path("app\public\\".$path."\\".$folderName);
+
+        if(preg_match("#[\/\\\]#",$folderName)){
+            $legitFolderName = false;
+        }
+
+        if($legitFolderName && file_exists($uploadingUnderFolderPath) && !file_exists($uploadingPath)){
+            //check to see if they have permission to upload to this folder
+            //either admin or matching email address for subfolder
+            $splitter = explode("/",$path);
+            //first folder will ALWAYS be an email address
+            $roleCheck = auth()->user()->role_id <= 1;
+            $returnVal['checks'] = [$splitter,auth()->user()->email];
+            if($roleCheck || $splitter[0] === auth()->user()->email){
+                try {
+                    mkdir($uploadingPath, 0775);
+                    $isCreated = true;
+                }
+                catch (\Exception $e){
+                    $returnVal['error'] = $e->getMessage();
+
+                }      
+            }
+        }else {
+            $returnVal['error'] = "The directory you are trying to upload into doesn't exist, or the directory you are trying to make already exists.";
+        }    
+        $returnVal['status'] = $isCreated;
+        return response()->json($returnVal);
+    }
+
     /**
-     * Show the form for creating new Folder.
+     * Display a listing of Folder.
      *
      * @return \Illuminate\Http\Response
      */
+
+    public function getListOfFiles(Request $request){
+        $path = "public/".$request->path;
+        $returnVal = ['status' => false, 'data' => []];
+        $pathSplit = explode("/",$path);
+
+        $hasPermissionToView = auth()->user()->role_id === 1 || $pathSplit[1] === auth()->user()->email;
+        if($hasPermissionToView){
+           
+            try {
+                $filez = [
+                    
+                    'directories' => Storage::directories($path),
+                    'files' => Storage::files($path)        
+                ];
+                $returnVal = ['status' => true, 'data' => $filez];
+                $returnVal['fullPath'] = $path."/";
+            } catch(Exception $e){
+                $returnVal['error'] = $e->getMessage();
+            }
+        }else{
+            $returnVal['error'] = "You do not have permission to view this file.";
+        }
+        
+        
+
+
+        return response()->json($returnVal);
+    }
+
+    private function directoryScout($directory = "",$level = 1){
+        $this->currentDirectory = $directory !== "" ? $directory : $this->rootDirectory ;
+        $this->directoryCache = Storage::directories($this->currentDirectory);
+
+        $currentArray = $this->directoryCache;
+
+        $returnVal = [];
+
+        $currentId = 0;
+
+        foreach($currentArray as $key => $directoryName){
+
+            $directoryFull = $directoryName;
+            $directoryName = explode("/",$directoryName);
+            $directoryName = $directoryName[count($directoryName)-1];
+            if(($level === 2 && ((auth()->user()->role_id !== 1 && $directoryName === auth()->user()->email) || auth()->user()->role_id === 1)) || $level !== 2){
+                $returnVal[count($returnVal)] = ['folder_name' => $directoryName,'folder_id' => $this->returnThenAdd(), 'full_path'=> $directoryFull , 'subfolders' => $this->directoryScout($directoryFull,($level+1))];
+            } 
+                
+            
+            
+        }        
+
+
+
+
+        
+        return $returnVal;
+    }
+
+    public function getFolderList(Request $request){
+        $returnValue = ['status' => false, 'error' => ""];
+        try {
+        if (! Gate::allows('folder_view')) {
+            $returnValue['error'] = "You do not have sufficient permissions to view folders.";
+        }else{
+            //get role ID
+            $userData = auth()->user();
+            $rootDirectory = "";
+            
+
+            $currentDirectory = $rootDirectory . $request->directory;
+
+            $this->rootDirectory = $rootDirectory;
+
+            // $directories = Storage::allDirectories($currentDirectory);
+            // $files = Storage::files($currentDirectory);
+            // $listOfFilesToIgnore = ['.gitignore'];
+            // $files = array_diff($files,$listOfFilesToIgnore);
+            $returnValue['directories'] = $this->directoryScout();
+            $returnValue['directoriesPlain'] = Storage::allDirectories($currentDirectory);
+        } }
+        catch(Exception $e){
+            $returnValue['error'] = "Error in obtaining folder." . $e ->getMessage();
+        }
+
+        $returnValue['status'] = ($returnValue['error'] === "");
+
+        return response()->json($returnValue);
+    }
+
+
+
     public function create()
     {
         if (! Gate::allows('folder_create')) {
@@ -160,23 +299,42 @@ class FoldersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($id, Request $request)
     {
         if (! Gate::allows('folder_view')) {
             return abort(401);
         }
         
-        $created_bies = \App\User::get()->pluck('name', 'id')->prepend(trans('quickadmin.qa_please_select'), '');
-
-        $files = \App\File::join("media","files.id","=","media.id")->join("users","users.id","=","created_by_id")->where('folder_id', $id)->get();
-
-        $folder = Folder::findOrFail($id);
-        $userFilesCount = File::join("media","files.id","=","media.id")->join("users","users.id","=","created_by_id")->where('created_by_id', Auth::getUser()->id)->count();
-
         $default = auth()->user()->role_id === 1 ? 'all' : 'my';
 
         $view = Input::get('filter') ? Input::get('filter') : $default;
 
+        $folder = Folder::select(DB::Raw("id,name,created_by_id,(SELECT email FROM users WHERE created_by_id = users.id) as email"))->findOrFail($id);
+
+        $basePathCheck = Input::get('currentBasePath') !== null ? Input::get('currentBasePath') : null;
+
+
+        $selector = $this->fileTable()->where("f.folder_id",$id);
+
+        if (request('show_deleted') == 1) {
+            if (!Gate::allows('file_delete')) {
+                return abort(401);
+            }
+            $files = $selector->whereNotNull("deleted_at");
+        } 
+
+
+        if($basePathCheck !== null){
+            $splitter = explode("/",$basePathCheck);
+            $files = $selector->where('path','like',$basePathCheck.'%');
+            if($files->get()->count() === 0){
+                return redirect('admin/files');
+            }
+        }
+
+        $files = $selector->get();
+
+        $userFilesCount = $files->count();
         return view('admin.folders.show', compact('folder', 'files', 'view' ,'userFilesCount'));
     }
 

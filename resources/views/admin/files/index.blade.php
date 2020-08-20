@@ -115,7 +115,7 @@
                                 </td>
 
                             @else
-                                <td>
+                                <td>              
                                     <a href="{{url('/storage/' . $file->folder_creator . '/'. $file->folder_name .'/' . $file->file_name )}}" class="btn btn-xs btn-success">Download</a>
                                     @can('file_delete')
                                         {!! Form::open(array(

@@ -58,8 +58,8 @@
             </li>
             @endcan
             
-            @can('file_access')
-            <li class="{{ $request->segment(2) == 'files' ? 'active' : '' }}">
+            @can('file_access') 
+            <li class="{{ $request->segment(2) == 'files' && !preg_match("#create(\/)?$#",$request->getPathInfo()) ? 'active' : '' }}">
                 <a href="{{ route('admin.files.index') }}">
                     <i class="fa fa-gears"></i>
                     <span class="title">@lang('quickadmin.files.title')</span>
@@ -67,9 +67,23 @@
             </li>
             @endcan
 
+            @can('file_access')
+            <li class="{{ $request->segment(2) == 'patients' && !preg_match("#create(\/)?$#",$request->getPathInfo()) ? 'active' : '' }}">
+                <a href="{{ url('admin/patients') }}">
+                    <i class="fa fa-list-alt" aria-hidden="true"></i>
+                    <span class="title">Hyperlink</span>
+                </a>
+            </li>
+            @endcan
 
-
-            
+            @can('file_access')
+            <li class="{{ $request->segment(2) == 'patients' && preg_match("#create(\/)?$#",$request->getPathInfo()) ? 'active' : '' }}">
+                <a href="{{ url('admin/patients/create') }}">
+                    <i class="fa fa-plus"></i>
+                    <span class="title"><strong>New Patient Entry</strong></span>
+                </a>
+            </li>
+            @endcan
 
 
             <li class="{{ $request->segment(1) == 'change_password' ? 'active' : '' }}">
@@ -78,6 +92,8 @@
                     <span class="title">@lang('quickadmin.qa_change_password')</span>
                 </a>
             </li>
+
+
 
             <li>
                 <a href="#logout" onclick="$('#logout').submit();">

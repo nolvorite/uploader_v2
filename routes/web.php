@@ -30,13 +30,23 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'admin', 'as' => 'admin.'], 
     Route::post('roles_mass_destroy', ['uses' => 'Admin\RolesController@massDestroy', 'as' => 'roles.mass_destroy']);
     Route::resource('users', 'Admin\UsersController');
     Route::post('users_mass_destroy', ['uses' => 'Admin\UsersController@massDestroy', 'as' => 'users.mass_destroy']);
+
     Route::resource('folders', 'Admin\FoldersController');
 
+    Route::resource('patients','Admin\PatientsController');
+
+    Route::post('patients', ['uses' => 'Admin\PatientsController@index', 'as' => 'patients.index']);
+
+    Route::post('list_patients', ['uses' => 'Admin\PatientsController@listPatients']);
+
     Route::post('folders_mass_destroy', ['uses' => 'Admin\FoldersController@massDestroy', 'as' => 'folders.mass_destroy']);
+
     Route::post('get_all_folders', ['uses' => 'Admin\FoldersController@getFolderList', 'as' => 'folders.get_list']);
     Route::post('add_subfolder', ['uses' => 'Admin\FoldersController@addSubFolder', 'as' => 'folders.add_subfolder']);
     Route::post('basic_list', ['uses' => 'Admin\FoldersController@getListOfFiles', 'as' => 'folders.basic_list']);
     Route::post('folders_restore/{id}', ['uses' => 'Admin\FoldersController@restore', 'as' => 'folders.restore']);
+
+    
 
     Route::delete('folders_perma_del/{id}', ['uses' => 'Admin\FoldersController@perma_del', 'as' => 'folders.perma_del']);
     Route::resource('files', 'Admin\FilesController');

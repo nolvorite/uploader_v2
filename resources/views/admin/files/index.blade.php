@@ -37,9 +37,10 @@
     <div class="panel panel-default">
 
     <div class="panel-heading">
-            List        </div>
+            Patients        </div>
 
         <div class="panel-body table-responsive">
+
             <table class="table table-bordered table-striped {{ count($files) > 0 ? 'datatable' : '' }} @can('file_delete') @if ( request('show_deleted') != 1 ) dt-select @endif @endcan">
                 <thead>
                 <tr>

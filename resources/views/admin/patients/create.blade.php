@@ -3,7 +3,7 @@
 
 
 @section('content')
-    <h3 class="page-title">@lang('quickadmin.files.title')</h3>
+    <h3 class="page-title">New Patient Entry</h3>
     {!! Form::open(['method' => 'POST', 'route' => ['admin.files.store'], 'files' => true,]) !!}
 
     <div class="panel panel-default">
@@ -15,9 +15,10 @@
             <div class="row">
                 <div class="col-xs-12 form-group">
                 <label class="control-label">Uploading Guide</label>
-                <p>Hello. First select a folder, then pick the files that you want to upload. You will be notified when the files are done uploading.</p>
+                <p>Aside, from the patient details, you will also need to upload his medical history. First select a folder, then pick the files that you want to upload. You will be notified when the files are done uploading.</p>
                 <p>If you have no more files to upload, simply click "Go Back" to see your new files.</p>
                 </div>
+                
                 <div class="col-xs-12 form-group">
                     {!! Form::label('folder_id', trans('quickadmin.files.fields.folder').'*', ['class' => 'control-label']) !!}
                     <select class="form-control select2" required="" id="folder_id" name="folder_id">
@@ -42,8 +43,61 @@
                 </div>
             </div>
             <div class="row">
+                <div class="col-xs-6">
+                    <div class="card-body">
+                        <label>Patient's Full Name</label>
+                        <input type="text" value="" placeholder="Full Name" class="form-control">
+                    </div>
+                    
+                </div><div class="col-xs-6"><div class="card-body">
+                        <label>Report Date</label>
+                        <input type="text" value="" placeholder="Report Date" class="form-control">
+                    </div></div>
+                </div><div class="row"><br>
+                <div class="col-xs-6 form-group">
+                    {!! Form::label('filename', 'PDF File', ['id' => 'upload-form','class' => 'control-label']) !!}
+                    {!! Form::file('filename[]', [
+                        'multiple',
+                        'class' => 'form-control file-upload',
+                        'data-url' => route('admin.media.upload'),
+                        'data-bucket' => 'filename',
+                        'data-filekey' => 'filename',
+                        'id' => 'my_id',
+                        ]) !!}
+                    <p class="help-block"></p>
+                    <div class="photo-block">
+                        <div class="progress-bar form-group">&nbsp;</div>
+                        <div class="files-list"></div>
+                    </div>
+                    @if($errors->has('filename'))
+                        <p class="help-block">
+                            {{ $errors->first('filename') }}
+                        </p>
+                    @endif
+                </div>
+                <div class="col-xs-6 form-group">
+                    {!! Form::label('filename', 'HTML File', ['id' => 'upload-form','class' => 'control-label']) !!}
+                    {!! Form::file('filename[]', [
+                        'multiple',
+                        'class' => 'form-control file-upload',
+                        'data-url' => route('admin.media.upload'),
+                        'data-bucket' => 'filename',
+                        'data-filekey' => 'filename',
+                        'id' => 'my_id',
+                        ]) !!}
+                    <p class="help-block"></p>
+                    <div class="photo-block">
+                        <div class="progress-bar form-group">&nbsp;</div>
+                        <div class="files-list"></div>
+                    </div>
+                    @if($errors->has('filename'))
+                        <p class="help-block">
+                            {{ $errors->first('filename') }}
+                        </p>
+                    @endif
+                </div>
                 <div class="col-xs-12 form-group">
-                    {!! Form::label('filename', 'Files', ['id' => 'upload-form','class' => 'control-label']) !!}
+                    {!! Form::label('filename', 'Other Files', ['id' => 'upload-form','class' => 'control-label']) !!}
                     {!! Form::file('filename[]', [
                         'multiple',
                         'class' => 'form-control file-upload',

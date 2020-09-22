@@ -53,10 +53,6 @@ class FoldersController extends Controller
         return view('admin.folders.index', compact('folders','view'));
     }
 
-    public function listOfFilesBasic(Request $request){
-
-    }
-
     public function addSubFolder(Request $request){
         $returnVal = ['status' => false, 'errors' => ''];
         $path = $request->path;

@@ -32,7 +32,7 @@ class SpatieMediaController extends Controller
 
     public function create(Request $request,StoreFilesRequest $request2)
     {
-        if (! $request->has('model_name') || ! $request->has('file_key') || ! $request->has('bucket')) {
+        if (! $request->has('model_name')) {
             return abort(500);
         }
 
@@ -43,7 +43,7 @@ class SpatieMediaController extends Controller
             abort(500, 'Model not found');
         }
 
-        $files      = $request->file($request->input('file_key'));
+        
         $addedFiles = [];
         $folderId = intval($request->input('folder_id'));
         $email = auth()->user()->email;
@@ -51,12 +51,35 @@ class SpatieMediaController extends Controller
         $croppedPathForEmailCheck = substr($path,0,strlen($email));
         $comparison = $email === $croppedPathForEmailCheck;
         $returnVal = ['error' => ''];        
+        $isNewPatientEntry = $request->has('is_new_patient');        
 
         if(auth()->user()->role_id === 1 || $comparison){
+
             $uploadSucceededWithoutErrors = true;
+
+            if($isNewPatientEntry){
+                $pdf = $request->file('pdf_file');
+                $html = $request->file('html_file');
+                $others = $request->file('other_files');
+
+                // $pdf['type'] = 'pdf';
+                // $pdf['type'] = 'html';
+
+                $files[] = $pdf;
+                $files[] = $html;
+                if($others !== null){
+                    $files = array_merge($files,$others);    
+                }
+
+            }else{
+                $files = $request->file($request->input('file_key'));
+            }
+
             foreach ($files as $file) {
+
                 try {
-                    $model->exists     = true;
+
+                    $model->exists = true;
 
                     $folderData = DB::table('folders')->where('id', $folderId)->first();
                     $folderName = $folderData->name;
@@ -68,9 +91,17 @@ class SpatieMediaController extends Controller
 
                     $relativePath = substr($path,strlen($basicPath)+1) === false ? "" : substr($path,strlen($basicPath)+1);
 
-                    $media = $model->addMedia($file)->withCustomProperties(['folder_id' => $folderId,'relativePath'=> $relativePath])->toMediaCollection($email);
+                    $media = $model->addMedia($file)->withCustomProperties(['folder_id' => $folderId,'relativePath'=> $relativePath])->toMediaCollection($email); 
 
-                    
+                    $type = '';
+
+                    // if($isNewPatientEntry){
+
+                    //     if(!isset($files['type'])){
+                    //         $files['type'] = 'others';
+                    //     }
+
+                    // }                    
 
                     $file = DB::table('files')->insert([
                         'id' => $media['id'],
@@ -78,8 +109,8 @@ class SpatieMediaController extends Controller
                         'folder_id' => $folderId,
                         'path' => $path,
                         'relative_path' => $relativePath,
-                        'created_at'=>DB::raw('NOW()'),
-                        'updated_at'=>DB::raw('NOW()'),
+                        'created_at'=> DB::raw('NOW()'),
+                        'updated_at'=> DB::raw('NOW()'),
                         'created_by_id' => Auth::getUser()->id
                     ]);
 
@@ -87,6 +118,7 @@ class SpatieMediaController extends Controller
                 } catch (\Exception $e) {
                     $uploadSucceededWithoutErrors = false;
                     $returnVal['error'] = $e->getMessage();
+                    dd($files,$e);
                 }
             }
 

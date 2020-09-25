@@ -33,11 +33,14 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'admin', 'as' => 'admin.'], 
 
     Route::resource('folders', 'Admin\FoldersController');
 
+
     Route::resource('patients','Admin\PatientsController');
 
-    Route::post('patients', ['uses' => 'Admin\PatientsController@index', 'as' => 'patients.index']);
+    Route::post('new_patient', ['uses' => 'Admin\PatientsController@newPatient']);
 
     Route::post('list_patients', ['uses' => 'Admin\PatientsController@listPatients']);
+
+    
 
     Route::post('folders_mass_destroy', ['uses' => 'Admin\FoldersController@massDestroy', 'as' => 'folders.mass_destroy']);
 

@@ -7,10 +7,15 @@
     <div id="patient_slide_1">
         <div class="card">
             <div class="card-body">
-                <input type="text" value="" placeholder="Search for Patient..." id="searcher" class="form-control">
+                <div class="col-md-6">
+                    <input type="text" value="" placeholder="Patient's First Name" name="first_name" class="searcher form-control">
+                </div>
+                <div class="col-md-6">
+                    <input type="text" value="" placeholder="Patient's Last Name" name="last_name" class="searcher form-control">
+                </div>
             </div>
         </div>
-    </div>
+    </div><br>
     <div id="patient_slide_2" class="hide">
     <br>
     	<div class="col-lg-12">
@@ -19,14 +24,14 @@
     		    	<div class="panel-heading">Patients</div>
 
 
-    <div class="panel-body table-responsive" style='    max-height: 500px;    overflow: auto;'>
+    <div class="panel-body table-responsive" style='    max-height: 400px;    overflow: auto;'>
     	
         <table class="table table-bordered table-striped" id="listof_patients">
             <thead>
             <tr>
                 <th>Doctor's Name</th>
                 <th>Patient's Name</th>
-                <th>File Name</th>
+                <th>File Names</th>
                 <th>Date Reported</th>
                 <th>Actions</th>
             </tr>
@@ -78,9 +83,11 @@
 @section('javascript')
     @parent
     <script type="text/javascript">
-        $("#searcher").on("keyup",function(){
-            value = $(this).val();
-            $.post(siteUrl+"admin/list_patients",{_token:window._token,"query":value}).done(function(results){
+        $(".searcher").on("keyup",function(){
+            firstName = $("[name=first_name]").val();
+            lastName = $("[name=last_name]").val();
+
+            $.post(siteUrl+"admin/list_patients",{_token:window._token,first_name: firstName, last_name: lastName}).done(function(results){
                 console.log(results);
                 //clear table results
                 $("#patient_slide_2").removeClass("hide");
@@ -89,22 +96,25 @@
                 for(index in results.data){
                     dt = results.data[index];
 
-                }
+                    downloadLinks = (dt.file_name !== null) ? "<a href='"+siteUrl+"storage/"+ dt.folder_creator +"/"+ dt.folder_name +"/"+ dt.relative_path +"/"+ dt.file_name +"' class=\"btn btn-xs btn-success view-full-details\">View File</a><a href='"+siteUrl+"admin/"+ dt.uuid +"/download' class=\"btn btn-xs btn-success\">Download File</a>" : '';
+                    fileName = (dt.file_name !== null) ? dt.file_name : 'n/a';
 
-                for(i = 0; i < 30; i++){
                     layout = "\
                     <tr>\
-                    <td>Doctor Name</td>\
-                    <td>Patient Name</td>\
-                    <td>File Name.html</td>\
-                    <td>September 15, 2020</td>\
-                    <td><button class=\"btn btn-xs btn-success view-full-details\">View File</button> <button class=\"btn btn-xs btn-success view-full-details\">Download Files</button></td>\
+                    <td>"+ dt.doctor_name +"</td>\
+                    <td>"+ dt.first_name +" "+ dt.last_name +"</td>\
+                    <td class='file_list'>"+ fileName +"</td>\
+                    <td>"+ dt.report_date +"</td>\
+                    <td class='optionz'>\
+                    "+downloadLinks+"</td>\
+                    \
                     </tr>\
                     ";
 
                     $("#listof_patients tbody").append(layout);
 
                 }
+
 
                 
 
@@ -119,4 +129,7 @@
             
         });
     </script>
+    <style>
+        .optionz .btn{margin-right:5px;}
+    </style>
 @stop

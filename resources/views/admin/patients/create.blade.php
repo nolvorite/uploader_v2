@@ -113,7 +113,7 @@
             </div>
 
 
-            <div id="patient_info" class="hide">
+            <div id="patient_info">
 
             <h3>Patient Info</h3>
 
@@ -244,8 +244,6 @@
                             //     '0%'
                             // );
                             getListOfFiles(fullPath);
-
-                            $("#patient_info").removeClass('hide');
 
                         }
 

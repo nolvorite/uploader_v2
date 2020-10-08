@@ -87,7 +87,28 @@ class PatientsController extends Controller
             $firstName = $request->has('first_name') ? $request->get('first_name') : '';
             $lastName = $request->has('last_name') ? $request->get('last_name') : '';    
 
-            $initialQuery = DB::table('patient_entries')->SELECT(DB::raw('(SELECT email FROM users INNER JOIN folders WHERE users.id = folders.created_by_id AND folders.id = f.folder_id LIMIT 0,1) as folder_creator,f.id,uuid,f.created_at,f.folder_id,f.created_by_id as file_creator,f.path,f.relative_path,media.id,model_type,media.name,media.file_name,folders.name as folder_name,media.mime_type,custom_properties,order_column,media.created_at,media.size,patient_entries.patient_id, patient_entries.pdf_html_id,first_name,last_name,doctor_name,report_date, f.uuid'))->leftJoin("files as f","patient_entries.pdf_file_id","=","f.id")->leftJoin("folders","folders.id","=","f.folder_id")->leftJoin("media","f.id","=","media.id");
+            $initialQuery = DB::table('patient_entries')
+
+            ->SELECT(DB::raw('(SELECT email FROM users 
+                INNER JOIN folders WHERE users.id = fo.created_by_id AND fo.id = f.folder_id LIMIT 0,1) as folder_creator,
+                fo.name as folder_name1,
+                f.uuid as uuid1,f.created_at as created_at1,f.folder_id as folder_id1,f.created_by_id as file_creator1,f.path,f.relative_path as relative_path1,f.uuid as uuid1,
+                m.id,m.model_type,m.name,m.file_name as file_name1,m.created_at,m.size,m.mime_type,m.custom_properties,m.order_column,
+
+                fo2.name as folder_name2,
+                f2.created_at as created_at2,f2.folder_id,f2.created_by_id as file_creator2,f2.path as path2,f2.relative_path as relative_path2,f2.uuid as uuid2,
+                m2.id as media_id2,m2.model_type as model_type2,m2.name as name_2,m2.file_name as file_name2,m2.created_at as created_at2,m2.size as size2,m2.mime_type as mime_type2,m2.custom_properties as custom_properties2,m2.order_column as order_column2,
+
+                patient_entries.patient_id, patient_entries.pdf_html_id,first_name,last_name,doctor_name,report_date '))
+
+            ->leftJoin("files as f","patient_entries.pdf_file_id","=","f.id")
+            ->leftJoin("folders as fo","fo.id","=","f.folder_id")
+            ->leftJoin("media as m","f.id","=","m.id")
+
+            ->leftJoin("files as f2","patient_entries.pdf_html_id","=","f2.id")
+            ->leftJoin("folders as fo2","fo2.id","=","f2.folder_id")
+            ->leftJoin("media as m2","f2.id","=","m2.id")
+            ;
 
             if($firstName === '' || $lastName === ''){
                 if($lastName === ''){

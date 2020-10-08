@@ -96,14 +96,18 @@
                 for(index in results.data){
                     dt = results.data[index];
 
-                    downloadLinks = (dt.file_name !== null) ? "<a href='"+siteUrl+"storage/"+ dt.folder_creator +"/"+ dt.folder_name +"/"+ dt.relative_path +"/"+ dt.file_name +"' class=\"btn btn-xs btn-success view-full-details\">View File</a><a href='"+siteUrl+"admin/"+ dt.uuid +"/download' class=\"btn btn-xs btn-success\">Download File</a>" : '';
-                    fileName = (dt.file_name !== null) ? dt.file_name : 'n/a';
+
+                    downloadLinks = (dt.file_name1 !== null) ? "<a href='"+siteUrl+"storage/"+ dt.folder_creator +"/"+ dt.folder_name1 +"/"+ dt.relative_path1 +"/"+ dt.file_name1 +"' class=\"btn btn-xs btn-success view-full-details\" target='_blank'>View File</a><a href='"+siteUrl+"admin/"+ dt.uuid1 +"/download' class=\"btn btn-xs btn-success\">Download File</a>" : '';
+
+                    downloadLinks2 = "<a href='"+siteUrl+"storage/"+ dt.folder_creator +"/"+ dt.folder_name1 +"/"+ dt.relative_path1 +"/"+ dt.file_name1 +"' target='_blank'>"+ dt.file_name1 +"</a>";
+
+                    downloadLinks2 += (dt.uuid2 !== null) ? "<a href='"+siteUrl+"storage/"+ dt.folder_creator +"/"+ dt.folder_name +"/"+ dt.relative_path2 +"/"+ dt.file_name2 +"' target='_blank'>"+ dt.file_name2 +"</a>" : "";
 
                     layout = "\
                     <tr>\
                     <td>"+ dt.doctor_name +"</td>\
                     <td>"+ dt.first_name +" "+ dt.last_name +"</td>\
-                    <td class='file_list'>"+ fileName +"</td>\
+                    <td class='file_list'>"+ downloadLinks2 +"</td>\
                     <td>"+ dt.report_date +"</td>\
                     <td class='optionz'>\
                     "+downloadLinks+"</td>\

@@ -81,6 +81,32 @@ class PatientsController extends Controller
 
     }
 
+    public function listFiles(Request $request){
+        $returnVal = ['status' => false, 'data' => [], 'errors' => ''];
+        if($request->has('patient_id')){
+
+            $patientId = intval($request->get('patient_id'));
+
+            $returnVal['patient_id'] = $patientId;
+
+            $data = DB::table(DB::raw('files as f'))->SELECT(DB::raw('(SELECT email FROM users 
+                INNER JOIN folders WHERE users.id = fo.created_by_id AND fo.id = f.folder_id LIMIT 0,1) as folder_creator,
+                fo.name as folder_name1,
+                f.uuid as uuid1,f.created_at as created_at1,f.folder_id as folder_id1,f.created_by_id as file_creator1,f.path,f.relative_path as relative_path1,f.uuid as uuid1,
+                m.id,m.model_type,m.name,m.file_name as file_name1,m.created_at,m.size,m.mime_type,m.custom_properties,m.order_column'))
+            ->leftJoin("folders as fo","fo.id","=","f.folder_id")
+            ->leftJoin("media as m","f.id","=","m.id")
+            ->where("f.patient_id",$patientId)->get();
+
+            $returnVal['status'] = true;
+            $returnVal['data'] = $data;
+
+        }
+        
+        return response()->json($returnVal);
+
+    }
+
     public function listPatients(Request $request){
         $returnVal = ['status' => false, 'data' => []];
         if(Auth::check()){

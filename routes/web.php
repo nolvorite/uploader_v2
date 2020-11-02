@@ -40,6 +40,7 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'admin', 'as' => 'admin.'], 
 
     Route::post('list_patients', ['uses' => 'Admin\PatientsController@listPatients']);
 
+    Route::post('list_files', ['uses' => 'Admin\PatientsController@listFiles']);
     
 
     Route::post('folders_mass_destroy', ['uses' => 'Admin\FoldersController@massDestroy', 'as' => 'folders.mass_destroy']);

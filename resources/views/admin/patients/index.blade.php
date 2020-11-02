@@ -83,6 +83,27 @@
 @section('javascript')
     @parent
     <script type="text/javascript">
+
+        $("body").on("click",".view-all-files",function(event){
+            patientId = $(this).attr("patient_id");
+            $.post(siteUrl+"admin/list_files",{_token:window._token,patient_id: patientId}).done(function(results){
+                if(!results.status){
+
+                }
+                else {
+                    patientId = parseInt(results.patient_id);
+                    fileListDOM = $(".other_files_list[patient_id='"+patientId+"']");
+                    fileListDOM.empty().collapse('show');
+                    for(f in results.data){
+                        dt = results.data[f];
+                        fileListDOM.append("<a href='"+siteUrl+"storage/"+ dt.folder_creator +"/"+ dt.folder_name1 +"/"+ dt.relative_path1 +"/"+ dt.file_name1 +"' target='_blank'>"+ dt.file_name1 +"</a>");
+                    }
+                }
+
+            });
+
+        });
+
         $(".searcher").on("keyup",function(){
             firstName = $("[name=first_name]").val();
             lastName = $("[name=last_name]").val();
@@ -97,11 +118,13 @@
                     dt = results.data[index];
 
 
-                    downloadLinks = (dt.file_name1 !== null) ? "<a href='"+siteUrl+"storage/"+ dt.folder_creator +"/"+ dt.folder_name1 +"/"+ dt.relative_path1 +"/"+ dt.file_name1 +"' class=\"btn btn-xs btn-success view-full-details\" target='_blank'>View File</a><a href='"+siteUrl+"admin/"+ dt.uuid1 +"/download' class=\"btn btn-xs btn-success\">Download File</a>" : '';
+                    downloadLinks = (dt.file_name1 !== null) ? "<a href='"+siteUrl+"storage/"+ dt.folder_creator +"/"+ dt.folder_name1 +"/"+ dt.relative_path1 +"/"+ dt.file_name1 +"' class=\"btn btn-xs btn-success view-full-details\" target='_blank'>View File</a><a href='"+siteUrl+"admin/"+ dt.uuid1 +"/download' class=\"btn btn-xs btn-success\">Download File</a><button class=\"btn btn-xs btn-primary view-all-files\" patient_id='"+dt.patient_id+"'>View Other Files</button>" : '';
 
-                    downloadLinks2 = "<a href='"+siteUrl+"storage/"+ dt.folder_creator +"/"+ dt.folder_name1 +"/"+ dt.relative_path1 +"/"+ dt.file_name1 +"' target='_blank'>"+ dt.file_name1 +"</a>";
+                    downloadLinks2 = "";
 
-                    downloadLinks2 += (dt.uuid2 !== null) ? "<a href='"+siteUrl+"storage/"+ dt.folder_creator +"/"+ dt.folder_name +"/"+ dt.relative_path2 +"/"+ dt.file_name2 +"' target='_blank'>"+ dt.file_name2 +"</a>" : "";
+                    downloadLinks2 += (dt.file_name1 !== null) ? "<a href='"+siteUrl+"storage/"+ dt.folder_creator +"/"+ dt.folder_name1 +"/"+ dt.relative_path1 +"/"+ dt.file_name1 +"' target='_blank'>"+ dt.file_name1 +"</a>" : "";
+
+                    downloadLinks2 += (dt.uuid2 !== '' && dt.uuid2 !== null) ? "<a href='"+siteUrl+"storage/"+ dt.folder_creator +"/"+ dt.folder_name +"/"+ dt.relative_path2 +"/"+ dt.file_name2 +"' target='_blank'>"+ dt.file_name2 +"</a>" : "";
 
                     layout = "\
                     <tr>\
@@ -110,7 +133,7 @@
                     <td class='file_list'>"+ downloadLinks2 +"</td>\
                     <td>"+ dt.report_date +"</td>\
                     <td class='optionz'>\
-                    "+downloadLinks+"</td>\
+                    "+downloadLinks+"<div class='other_files_list collapse' patient_id='"+dt.patient_id+"'></div></td>\
                     \
                     </tr>\
                     ";

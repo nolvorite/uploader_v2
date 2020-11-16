@@ -18,14 +18,14 @@
     </div><br>
     <div id="patient_slide_2" class="hide">
     <br>
-    	<div class="col-lg-12">
-    		    <div class="panel panel-default">
+        <div class="col-lg-12">
+                <div class="panel panel-default">
 
-    		    	<div class="panel-heading">Patients</div>
+                    <div class="panel-heading">Patients</div>
 
 
     <div class="panel-body table-responsive" style='    max-height: 400px;    overflow: auto;'>
-    	
+        
         <table class="table table-bordered table-striped" id="listof_patients">
             <thead>
             <tr>
@@ -49,13 +49,13 @@
         </div>
     </div></div>
     <!--<div class="col-lg-6">
-    	<div class="panel panel-default">
+        <div class="panel panel-default">
 
-    		    	<div class="panel-heading">Full Details</div>
+                    <div class="panel-heading">Full Details</div>
 
 
     <div class="panel-body table-responsive">
-    	<div id="full_details_pane" class="hide">
+        <div id="full_details_pane" class="hide">
             <h3>{Patient Name}</h3>
             <div id="full_patient_desc" style='    max-height: 500px;    overflow: auto;'>
                 <button class="btn btn-xs btn-success">View HTML File</button> <button class="btn btn-xs btn-primary">View PDF File</button><br><br>
@@ -84,26 +84,6 @@
     @parent
     <script type="text/javascript">
 
-        $("body").on("click",".view-all-files",function(event){
-            patientId = $(this).attr("patient_id");
-            $.post(siteUrl+"admin/list_files",{_token:window._token,patient_id: patientId}).done(function(results){
-                if(!results.status){
-
-                }
-                else {
-                    patientId = parseInt(results.patient_id);
-                    fileListDOM = $(".other_files_list[patient_id='"+patientId+"']");
-                    fileListDOM.empty().collapse('show');
-                    for(f in results.data){
-                        dt = results.data[f];
-                        fileListDOM.append("<a href='"+siteUrl+"storage/"+ dt.folder_creator +"/"+ dt.folder_name1 +"/"+ dt.relative_path1 +"/"+ dt.file_name1 +"' target='_blank'>"+ dt.file_name1 +"</a>");
-                    }
-                }
-
-            });
-
-        });
-
         $(".searcher").on("keyup",function(){
             firstName = $("[name=first_name]").val();
             lastName = $("[name=last_name]").val();
@@ -115,25 +95,32 @@
                 $("#listof_patients tbody").empty();
 
                 for(index in results.data){
+
                     dt = results.data[index];
 
+                    downloadLinks = (dt.file_name1 !== null) ? "<a href='"+siteUrl+"storage/"+ dt.folder_creator +"/"+ dt.folder_name +"/"+ dt.relative_path +"/"+ dt.file_name1 +"' class=\"btn btn-xs btn-success view-full-details\" target='_blank'>View File</a><a href='"+siteUrl+"admin/"+ dt.uuid1 +"/download' class=\"btn btn-xs btn-success\">Download File</a>" : '';
 
-                    downloadLinks = (dt.file_name1 !== null) ? "<a href='"+siteUrl+"storage/"+ dt.folder_creator +"/"+ dt.folder_name1 +"/"+ dt.relative_path1 +"/"+ dt.file_name1 +"' class=\"btn btn-xs btn-success view-full-details\" target='_blank'>View File</a><a href='"+siteUrl+"admin/"+ dt.uuid1 +"/download' class=\"btn btn-xs btn-success\">Download File</a><button class=\"btn btn-xs btn-primary view-all-files\" patient_id='"+dt.patient_id+"'>View Other Files</button>" : '';
+                    fileList = "<em>No Files in Patient.</em>";
 
-                    downloadLinks2 = "";
-
-                    downloadLinks2 += (dt.file_name1 !== null) ? "<a href='"+siteUrl+"storage/"+ dt.folder_creator +"/"+ dt.folder_name1 +"/"+ dt.relative_path1 +"/"+ dt.file_name1 +"' target='_blank'>"+ dt.file_name1 +"</a>" : "";
-
-                    downloadLinks2 += (dt.uuid2 !== '' && dt.uuid2 !== null) ? "<a href='"+siteUrl+"storage/"+ dt.folder_creator +"/"+ dt.folder_name +"/"+ dt.relative_path2 +"/"+ dt.file_name2 +"' target='_blank'>"+ dt.file_name2 +"</a>" : "";
+                    if(dt.files.length > 0){
+                        fileList = "";
+                        for(fileI in dt.files){
+                            file = dt.files[fileI];
+                            fileList += "<a href='"+siteUrl+"storage/"+ file.folder_creator +"/"+ file.folder_name +"/"+ file.relative_path +"/"+ file.file_name +"' target='_blank'>"+ file.file_name +"</a><br>";
+                        }
+                    }else{
+                        //
+                    }
+                    
 
                     layout = "\
                     <tr>\
                     <td>"+ dt.doctor_name +"</td>\
                     <td>"+ dt.first_name +" "+ dt.last_name +"</td>\
-                    <td class='file_list'>"+ downloadLinks2 +"</td>\
+                    <td class='file_list'>"+ fileList +"</td>\
                     <td>"+ dt.report_date +"</td>\
                     <td class='optionz'>\
-                    "+downloadLinks+"<div class='other_files_list collapse' patient_id='"+dt.patient_id+"'></div></td>\
+                    "+downloadLinks+"</td>\
                     \
                     </tr>\
                     ";

@@ -16,7 +16,7 @@
 
             
             @can('user_management_access')
-            <li class="treeview">
+            <li class="treeview active">
                 <a href="#">
                     <i class="fa fa-users"></i>
                     <span class="title">@lang('quickadmin.user-management.title')</span>
@@ -24,7 +24,7 @@
                         <i class="fa fa-angle-left pull-right"></i>
                     </span>
                 </a>
-                <ul class="treeview-menu">
+                <ul class="treeview-menu menu-open">
                 
                 @can('role_access')
                 <li class="{{ $request->segment(2) == 'roles' ? 'active active-sub' : '' }}">

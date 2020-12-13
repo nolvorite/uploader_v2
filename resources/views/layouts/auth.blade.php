@@ -1,16 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="guest-pages">
 
 <head>
     @include('partials.head')
+    <style type="text/css">
+        html.guest-pages{
+            background:#fff url('{{ URL::to('') }}/guest_wallpape.jpg');
+            background-size: cover;
+        }
+    </style>
 </head>
 
-<body class="page-header-fixed">
+<body class="guest-pages" >
 
-    <div style="margin-top: 10%;"></div>
-
-    <div class="container-fluid">
-        @yield('content')
+    
+    <div id="spanner">
+        <div class="container-fluid">
+            @yield('content')
+        </div>
     </div>
 
     <div class="scroll-to-top"
@@ -19,6 +26,10 @@
     </div>
 
     @include('partials.javascripts')
+
+    <script type="text/javascript">
+        isLoggedIn = false;
+    </script>
 
 </body>
 </html>

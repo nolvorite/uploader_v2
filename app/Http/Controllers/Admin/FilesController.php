@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Input;
 use Faker\Provider\Uuid;
 
+use Illuminate\Support\Facades\DB as DB;
+
 
 
 class FilesController extends Controller
@@ -40,6 +42,7 @@ class FilesController extends Controller
         }
 
         $default = auth()->user()->role_id === 1 ? 'all' : 'my';
+        $email = auth()->user()->email;
 
         $view = $default;
 
@@ -54,7 +57,7 @@ class FilesController extends Controller
                 //
             break;
             case "my":
-                $selector = $selector->where('f.created_by_id',auth()->user()->id);
+                $selector = $selector->where('f.created_by_id',auth()->user()->id)->orWhere("f.path","LIKE",$email."%");
             break;
         }
 
@@ -65,12 +68,13 @@ class FilesController extends Controller
             $files = $selector->whereNotNull("deleted_at");
         } 
 
-
+        DB::connection()->enableQueryLog();
         if($basePathCheck !== null){
             $splitter = explode("/",$basePathCheck);
             $files = $selector->where('path','like',$basePathCheck.'%');
             if($files->get()->count() === 0){
-                return redirect('admin/files');
+                var_dump(DB::getQueryLog());
+                //return redirect('admin/files');
             }
         }
 

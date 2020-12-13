@@ -2,8 +2,8 @@
 
 @section('content')
 <div class="row">
-    <div class="col-md-8 col-md-offset-2">
-        <div class="panel panel-default">
+    <div class="col-md-6 col-md-offset-3">
+        <div class="panel panel-default" id="main_guest_pane">
             <div class="panel-heading">{{ ucfirst(config('app.name')) }} @lang('quickadmin.qa_login')</div>
             <div class="panel-body">
                 @if (count($errors) > 0)
@@ -27,9 +27,9 @@
                            value="{{ csrf_token() }}">
 
                     <div class="form-group">
-                        <label class="col-md-4 control-label">@lang('quickadmin.qa_email')</label>
+                        <label class="col-md-3 control-label">@lang('quickadmin.qa_email')</label>
 
-                        <div class="col-md-6">
+                        <div class="col-md-7">
                             <input type="email"
                                    class="form-control"
                                    name="email"
@@ -38,9 +38,9 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="col-md-4 control-label">@lang('quickadmin.qa_password')</label>
+                        <label class="col-md-3 control-label">@lang('quickadmin.qa_password')</label>
 
-                        <div class="col-md-6">
+                        <div class="col-md-7">
                             <input type="password"
                                    class="form-control"
                                    name="password">
@@ -48,7 +48,7 @@
                     </div>
 
                     <div class="form-group">
-                        <div class="col-md-6 col-md-offset-4">
+                        <div class="col-md-6 col-md-offset-3">
                             <a href="{{ route('auth.password.reset') }}">@lang('quickadmin.qa_forgot_password')</a>
                             <br>
                             <a href="{{ route('auth.register') }}">@lang('quickadmin.qa_registration')</a>
@@ -57,7 +57,7 @@
 
 
                     <div class="form-group">
-                        <div class="col-md-6 col-md-offset-4">
+                        <div class="col-md-6 col-md-offset-3">
                             <label>
                                 <input type="checkbox"
                                        name="remember"> @lang('quickadmin.qa_remember_me')
@@ -66,7 +66,7 @@
                     </div>
 
                     <div class="form-group">
-                        <div class="col-md-6 col-md-offset-4">
+                        <div class="col-md-6 col-md-offset-3">
                             <button type="submit"
                                     class="btn btn-primary"
                                     style="margin-right: 15px;">

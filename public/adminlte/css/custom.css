@@ -1,4 +1,41 @@
 
-.label {margin-right:5px;margin-bottom:5px !important;display:inline-block;} #wrapper {
+.label {margin-right:5px;margin-bottom:5px !important;display:inline-block;} 
+
+#wrapper {
     position: relative;
 }
+
+html.guest-pages {
+    min-height: 100%;
+    padding: 10px;
+    display: table;
+    width: 100%;
+}
+
+body.guest-pages {
+    display: table-row;
+    width: 100%;
+    vertical-align: middle;
+    height: 100%;
+    background: transparent;
+}
+
+#spanner{
+	display: table-cell;
+	vertical-align: middle;
+}
+
+#main_guest_pane {
+    box-shadow: 0 0 0 3px #fff, 0 0 15px 5px rgba(0,0,0,.5);
+}
+
+.panel-heading {
+    font-weight: bold;
+    font-size: 130%;
+}
+
+input,textarea{border-radius:4px;}
+
+#submitt #goto_folder{display:none;}
+
+#doctor_email{margin-bottom:15px;}

@@ -30,7 +30,8 @@
             <thead>
             <tr>
                 <th>Doctor's Name</th>
-                <th>Patient's Name</th>
+                <th>First Name</th>
+                <th>Last Name</th>
                 <th>File Names</th>
                 <th>Date Reported</th>
                 <th>Actions</th>
@@ -98,29 +99,41 @@
 
                     dt = results.data[index];
 
-                    downloadLinks = (dt.file_name1 !== null) ? "<a href='"+siteUrl+"storage/"+ dt.folder_creator +"/"+ dt.folder_name +"/"+ dt.relative_path +"/"+ dt.file_name1 +"' class=\"btn btn-xs btn-success view-full-details\" target='_blank'>View File</a><a href='"+siteUrl+"admin/"+ dt.uuid1 +"/download' class=\"btn btn-xs btn-success\">Download File</a>" : '';
+                    
 
                     fileList = "<em>No Files in Patient.</em>";
+                    firstData = '';
 
                     if(dt.files.length > 0){
                         fileList = "";
                         for(fileI in dt.files){
                             file = dt.files[fileI];
-                            fileList += "<a href='"+siteUrl+"storage/"+ file.folder_creator +"/"+ file.folder_name +"/"+ file.relative_path +"/"+ file.file_name +"' target='_blank'>"+ file.file_name +"</a><br>";
+                            file.url = siteUrl+"storage/"+ file.folder_creator +"/"+ file.folder_name +"/"+ file.relative_path +"/"+ file.file_name ;
+                            if(typeof firstData === 'string'){
+                                firstData = file;
+
+                            }
+                            fileList += "<a href='"+file.url+"' target='_blank'>"+ file.file_name +"</a><br>";
                         }
+
                     }else{
                         //
                     }
+
+                    downloadLinks = (dt.files.length > 0) ? "<a href='"+siteUrl+"storage/"+ firstData.folder_creator +"/"+ firstData.folder_name +"/"+ firstData.relative_path +"/"+ firstData.file_name +"' class=\"btn btn-xs btn-success view-full-details\" target='_blank'>View File</a><a href='"+siteUrl+"admin/"+ firstData.uuid +"/download' class=\"btn btn-xs btn-success\">Download File</a>" : '<em>No Files Available.</em>';
+
+                    editOption = "<a href='/admin/patients/create?id="+dt.patient_id+"'></a>";
                     
 
                     layout = "\
                     <tr>\
                     <td>"+ dt.doctor_name +"</td>\
-                    <td>"+ dt.first_name +" "+ dt.last_name +"</td>\
+                    <td>"+ dt.first_name +"</td>\
+                    <td>"+ dt.last_name +"</td>\
                     <td class='file_list'>"+ fileList +"</td>\
                     <td>"+ dt.report_date +"</td>\
                     <td class='optionz'>\
-                    "+downloadLinks+"</td>\
+                    "+downloadLinks+" "+editOption+"</td>\
                     \
                     </tr>\
                     ";

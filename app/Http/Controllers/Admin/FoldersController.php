@@ -114,6 +114,7 @@ class FoldersController extends Controller
                 ];
                 $returnVal = ['status' => true, 'data' => $filez];
                 $returnVal['fullPath'] = $path."/";
+                $returnVal['link'] = "storage/".$request->path;
             } catch(Exception $e){
                 $returnVal['error'] = $e->getMessage();
             }
@@ -304,13 +305,14 @@ class FoldersController extends Controller
         $default = auth()->user()->role_id === 1 ? 'all' : 'my';
 
         $view = Input::get('filter') ? Input::get('filter') : $default;
+        $email = auth()->user()->email;
 
         $folder = Folder::select(DB::Raw("id,name,created_by_id,(SELECT email FROM users WHERE created_by_id = users.id) as email"))->findOrFail($id);
 
         $basePathCheck = Input::get('currentBasePath') !== null ? Input::get('currentBasePath') : null;
 
 
-        $selector = $this->fileTable()->where("f.folder_id",$id);
+        $selector = $this->fileTable()->where("f.folder_id",$id)->orWhere("f.path","LIKE",$email."%");
 
         if (request('show_deleted') == 1) {
             if (!Gate::allows('file_delete')) {
@@ -324,7 +326,7 @@ class FoldersController extends Controller
             $splitter = explode("/",$basePathCheck);
             $files = $selector->where('path','like',$basePathCheck.'%');
             if($files->get()->count() === 0){
-                return redirect('admin/files');
+                //return redirect('admin/files');
             }
         }
 

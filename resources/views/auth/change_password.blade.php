@@ -13,7 +13,7 @@
 	@else
 		{!! Form::open(['method' => 'PATCH', 'route' => ['auth.change_password']]) !!}
 		<!-- If no success message in flash session show change password form  -->
-		<div class="panel panel-default">
+		<div class="panel panel-default" id="main_guest_pane">
 			<div class="panel-heading">
 				@lang('quickadmin.qa_edit')
 			</div>

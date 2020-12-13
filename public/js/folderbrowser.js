@@ -50,7 +50,8 @@ function getListOfFiles(fullPath){
 		}
 		for(index in results.data.files){
 			name = results.data.files[index].replace(results.fullPath,"");
-			$("#listof_files").append("<li><i class=\"fa fa-file-excel-o\" aria-hidden=\"true\"></i>&nbsp;"+name+"</li>");
+
+			$("#listof_files").append("<li><i class=\"fa fa-file-excel-o\" aria-hidden=\"true\"></i>&nbsp;<a target='_blank' href='"+siteUrl+encodeURI(results.link)+"/"+encodeURI(name)+"'>"+name+"</a></li>");
 		}
 	});
 }
@@ -194,9 +195,6 @@ $(document).ready(function(){
 })
 
 
-$("body").on("click","#goto_folder",function(event){
-
-});
 
 $("body").on("click",".goto-tab",function(event){
 	event.preventDefault();
@@ -204,6 +202,7 @@ $("body").on("click",".goto-tab",function(event){
 		$("#goto_folder").removeClass('hide');
 	}
 	folderId = $(this).attr("href");
+	console.log(parseInt(folderId));
 	if(parseInt(folderId) > -3){
 		$(this).parents(".dropdown-segment").removeClass('rightclip').nextAll().addClass('hide').removeClass('rightclip');
 		for(i in DIRECTORY_LIST_INLINE){
@@ -211,9 +210,8 @@ $("body").on("click",".goto-tab",function(event){
 			if(dt.folder_id === parseInt(folderId)){
 				fullPath = dt.full_path;
 				fullPath = fullPath.replace(/^public\//,"");
-				if(isCreatingFiles){
-					getListOfFiles(fullPath);
-				}
+
+				getListOfFiles(fullPath);
 				
 				$("#directory_dropdown .dropdown-segment[folder_id="+folderId+"]").insertAfter("#directory_dropdown .dropdown-segment[folder_id="+dt.parentId+"]").addClass("rightclip").removeClass('hide');
 			}
@@ -236,7 +234,7 @@ $("body").on("click",".goto-tab",function(event){
 
 $("body").on("click","#goto_folder",function(){
 
-	fullPath = fullPath !== "" ? "?currentBasePath="+fullPath : "";
+	fullPath = fullPath !== "" ? "?currentBasePath="+encodeURI(fullPath) : "";
 	location.assign(siteUrl+"admin/files"+fullPath);
 });
 

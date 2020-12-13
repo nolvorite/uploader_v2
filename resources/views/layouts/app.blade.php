@@ -54,5 +54,10 @@
 {!! Form::close() !!}
 
 @include('partials.javascripts')
+
+<script type="text/javascript">
+    isLoggedIn = true;
+</script>
+
 </body>
 </html>

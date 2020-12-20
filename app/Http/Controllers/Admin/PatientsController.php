@@ -143,7 +143,7 @@ class PatientsController extends Controller
         $firstName = $request->input('first_name');
         $lastName = $request->input('last_name');
         $reportDate = $request->input('report_date');
-        $doctorName = $this->auth()->role_id === 1 ? $request->input('doctor_name') : $this->auth()->email;
+        $doctorName = auth()->user()->role_id === 1 ? $request->input('doctor_name') : auth()->user()->email;
         $action = $request->input('action');
         $patientId = $request->input('patient_id');
         $email = $request->input('email');

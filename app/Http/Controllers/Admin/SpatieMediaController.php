@@ -118,7 +118,6 @@ class SpatieMediaController extends Controller
                 } catch (\Exception $e) {
                     $uploadSucceededWithoutErrors = false;
                     $returnVal['error'] = $e->getMessage();
-                    dd($files,$e);
                 }
             }
 

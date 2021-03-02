@@ -72,7 +72,7 @@ function directoryScout(directory = ""){
 
 		urlCheck = getParams(location.href);
 
-		isCreatingFiles = /files\/create/.test(location.href);
+		isCreatingFiles = /(admin\/file_manager|files\/create)/.test(location.href);
 
 		viewingFilesNoBasePath = /admin\/files(?!currentBasePath)/.test(location.href);
 

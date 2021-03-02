@@ -76,11 +76,43 @@
             </li>
             @endcan
 
+            <?php if (
+                app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('ror_supervision')
+                ||
+                app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('ror_maintenance')
+            ): ?> 
+            <li class="{{ $request->segment(2) == 'assign_file_ror' ? 'active' : '' }}">
+                <a href="{{ url('admin/assign_file_ror') }}">
+                    <i class="fa fa-file-archive-o"></i>
+                    <span class="title">Assign Files</span>
+                </a>
+            </li>
+
+            <li class="{{ $request->segment(2) == 'list_of_files_ror' ? 'active' : '' }}">
+                <a href="{{ url('admin/list_of_files_ror') }}">
+                    <i class="fa fa-list-alt"></i>
+                    <span class="title">List of Assigned Files</span>
+                </a>
+            </li>
+            
+            <?php endif; ?>
+
             @can('file_access')
+            @can('patient_access')
             <li class="{{ $request->segment(2) == 'patients' && preg_match("#create(\/)?$#",$request->getPathInfo()) ? 'active' : '' }}">
                 <a href="{{ url('admin/patients/create') }}">
                     <i class="fa fa-plus"></i>
                     <span class="title"><strong>New Patient Entry</strong></span>
+                </a>
+            </li>
+            @endcan
+            @endcan
+
+            @can('file_manager')
+            <li class="{{ $request->segment(2) == 'file_manager' ? 'active' : '' }}">
+                <a href="{{ url('admin/file_manager') }}">
+                    <i class="fa fa-file"></i>
+                    <span class="title">File Manager</span>
                 </a>
             </li>
             @endcan

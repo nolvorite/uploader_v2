@@ -221,7 +221,6 @@ class PatientsController extends Controller
                 } catch(Exception $e){
                     exit();
                 }
-                
             });
         } catch(Exception $e){
             $response .= " However, we were unable to send an email to your specified recipient email addresses.";
@@ -287,8 +286,7 @@ class PatientsController extends Controller
         if(isset($_GET['id'])){
             $patientEntryCheck = DB::table('patient_entries')->where('patient_id', $_GET['id']);
             if($patientEntryCheck->count() === 0){
-                Redirect::to('/admin/patients/create');
-                exit();
+                return redirect('/admin/patients/create');
             }else{
                 //check to see if user has authority
                 if(auth()->user()->role_id !== 1){
@@ -298,9 +296,10 @@ class PatientsController extends Controller
                     ->orWhere('doctor_name',auth()->user()->email)
                     ;
 
+
+
                     if(count($patientEntryCheck) === 0){
-                        Redirect::to('/admin/patients/create');
-                        exit();
+                        return redirect('/admin/patients/create');
                     }
 
                 }

@@ -57,6 +57,16 @@
 
       li{word-wrap: break-word;}
 
+      #drag_drop_box {
+          background: #c0c0c0;
+          /* min-height: 100px; */
+          border-radius: 5px;
+          box-shadow: inset 0 10px 10px rgba(0,0,0,.2);
+          font-size: 30px;
+          padding: 20px 0;
+          text-align: center;
+      }
+
 </style>
 
 @if(Auth::check())

@@ -73,7 +73,7 @@ class FilesController extends Controller
             $splitter = explode("/",$basePathCheck);
             $files = $selector->where('path','like',$basePathCheck.'%');
             if($files->get()->count() === 0){
-                var_dump(DB::getQueryLog());
+                //var_dump(DB::getQueryLog());
                 //return redirect('admin/files');
             }
         }
@@ -108,6 +108,32 @@ class FilesController extends Controller
         return view('admin.files.create', compact('folders', 'created_bies', 'userFilesCount', 'roleId', 'folderId'));
     }
 
+    public function listFilesROR(Request $request){
+        return view('admin.files.ror');
+    }
+
+    public function assignFilesROR(Request $request){
+        return view('admin.files.assign');
+    }
+
+    public function fileManager(Request $request)
+    {
+        if (!Gate::allows('file_create')) {
+            return abort(401);
+        }
+        
+        $roleId = Auth::getUser()->role_id;
+        $userFilesCount = File::where('created_by_id', Auth::getUser()->id)->count();
+
+        $folderId = $request->folder_id !== null ? intval($request->folder_id) : null;
+
+
+        $created_bies = \App\User::get()->pluck('name','id')->prepend(trans('quickadmin.qa_please_select'), '');
+        $folders = \App\Folder::select("users.email","folders.name","folders.id")->join("users","folders.created_by_id","=","users.id")->get();
+
+        return view('admin.files.manage', compact('folders', 'created_bies', 'userFilesCount', 'roleId', 'folderId'));
+    }
+
     /**
      * Store a newly created File in storage.
      *
@@ -120,28 +146,49 @@ class FilesController extends Controller
             return abort(401);
         }
         
-            // $request = $this->saveFiles($request);
+        // $request = $this->saveFiles($request);
 
-            // $data = $request->all();
-            // $fileIds = $request->input('filename_id');
+        // $data = $request->all();
+        // $fileIds = $request->input('filename_id');
 
-            // foreach ($fileIds as $fileId) {
-            //     $file = File::create([
-            //         'id' => $fileId,
-            //         'uuid' => (string)\Webpatser\Uuid\Uuid::generate(),
-            //         'folder_id' => $request->input('folder_id'),
-            //         'created_by_id' => Auth::getUser()->id
+        // foreach ($fileIds as $fileId) {
+        //     $file = File::create([
+        //         'id' => $fileId,
+        //         'uuid' => (string)\Webpatser\Uuid\Uuid::generate(),
+        //         'folder_id' => $request->input('folder_id'),
+        //         'created_by_id' => Auth::getUser()->id
 
-            //     ]);
-            // }
+        //     ]);
+        // }
 
-            // foreach ($request->input('filename_id', []) as $index => $id) {
-            //     $model = config('laravel-medialibrary.media_model');
-            //     $file = $model::find($id);
-            //     $file->model_id = $file->id;
-            //     $file->save();
-            // }
-            return redirect()->route('admin.files.index');
+        // foreach ($request->input('filename_id', []) as $index => $id) {
+        //     $model = config('laravel-medialibrary.media_model');
+        //     $file = $model::find($id);
+        //     $file->model_id = $file->id;
+        //     $file->save();
+        // }
+
+        $subject = "A user has added a file to his folder. List of files: ";
+
+
+
+        try {
+            Mail::send('emailtemplate', $emailSendData, function($message) use ($recipient,$subject){
+                try {
+                    $message->to($recipient, "User")
+                        ->subject($subject);
+                    $message->from(env('MAIL_USERNAME'),env('MAIL_FROM_NAME'));
+                } catch(Exception $e){
+                    exit();
+                }
+            });
+        } catch(Exception $e){
+            $response .= " However, we were unable to send an email to your specified recipient email addresses.";
+        }
+
+
+
+        return redirect()->route('admin.files.index');
 
     }
 

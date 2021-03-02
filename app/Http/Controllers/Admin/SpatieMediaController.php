@@ -19,6 +19,9 @@ use Faker\Provider\Uuid;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Spatie\CustomPath;
 
+use App\Mail\EmailTemplate;
+use Illuminate\Support\Facades\Mail;
+
 
 class SpatieMediaController extends Controller
 {
@@ -119,6 +122,38 @@ class SpatieMediaController extends Controller
                     $uploadSucceededWithoutErrors = false;
                     $returnVal['error'] = $e->getMessage();
                 }
+            }
+
+            if(!$isNewPatientEntry && $uploadSucceededWithoutErrors){
+                $subject = "A user has added a file to his folder.";
+                $content = "A user has added a file to his folder. List of -files:";
+
+                $emailSendData['recipient'] = env('MAIL_USERNAME');
+
+                $recipient = $emailSendData['recipient'];
+                
+
+                foreach($addedFiles as $file){
+                    $fileName = $file['file_name'];
+                    $content .= "\"" . $basicPath . "/" . $fileName . "\", ";
+                }
+
+                $emailSendData['content'] = $content;
+
+                try {
+                    Mail::send('emailtemplate', $emailSendData, function($message) use ($recipient,$subject){
+                        try {
+                            $message->to(env('MAIL_USERNAME'), "User")
+                                ->subject($subject);
+                            $message->from(env('MAIL_USERNAME'),env('MAIL_FROM_NAME'));
+                        } catch(Exception $e){
+                            exit();
+                        }
+                    });
+                } catch(Exception $e){
+                    $response .= " However, we were unable to send an email to your specified recipient email addresses.";
+                }
+
             }
 
         }else{

@@ -71,45 +71,62 @@ class AuthServiceProvider extends ServiceProvider
 
         // Auth gates for: Folders
         Gate::define('folder_access', function ($user) {
-            return in_array($user->role_id, [1, 2, 3]);
+            return in_array($user->role_id, [1, 2, 3, 4, 5]);
         });
         Gate::define('folder_create', function ($user) {
-            return in_array($user->role_id, [1, 2, 3]);
+            return in_array($user->role_id, [1, 2, 3, 4, 5]);
         });
         Gate::define('folder_edit', function ($user) {
-            return in_array($user->role_id, [1, 2, 3]);
+            return in_array($user->role_id, [1, 2, 3, 4, 5]);
         });
         Gate::define('folder_view', function ($user) {
-            return in_array($user->role_id, [1, 2, 3]);
+            return in_array($user->role_id, [1, 2, 3, 4, 5]);
         });
         Gate::define('folder_delete', function ($user) {
-            return in_array($user->role_id, [1, 2, 3]);
+            return in_array($user->role_id, [1, 2, 3, 4, 5]);
         });
 
         // Auth gates for: Files
         Gate::define('file_access', function ($user) {
-            return in_array($user->role_id, [1, 2, 3]);
+            return in_array($user->role_id, [1, 2, 3, 4, 5]);
         });
         Gate::define('file_create', function ($user) {
-            return in_array($user->role_id, [1, 2, 3]);
+            return in_array($user->role_id, [1, 2, 3, 4, 5]);
         });
         Gate::define('file_edit', function ($user) {
-            return in_array($user->role_id, [1, 2, 3]);
+            return in_array($user->role_id, [1, 2, 3, 4, 5]);
         });
         Gate::define('file_view', function ($user) {
-            return in_array($user->role_id, [1, 2, 3]);
+            return in_array($user->role_id, [1, 2, 3, 4, 5]);
         });
         Gate::define('file_delete', function ($user) {
-            return in_array($user->role_id, [1, 2, 3]);
+            return in_array($user->role_id, [1, 2, 3, 4, 5]);
+        });
+
+        Gate::define('ror_supervision', function ($user) {
+            return in_array($user->role_id, [1, 4]);
+        });
+
+        Gate::define('ror_maintenance', function ($user) {
+            return in_array($user->role_id, [1, 5]);
+        });
+
+        Gate::define('file_manager', function ($user) {
+            return in_array($user->role_id, [1, 3]);
+        });
+
+
+        Gate::define('patient_access', function ($user) {
+            return in_array($user->role_id, [1, 4]);
         });
 
         // Auth gates for: Subscriptions and Payments
         Gate::define('plan_access', function ($user) {
-            return in_array($user->role_id, [1, 2, 3]);
+            return in_array($user->role_id, [1, 2, 3, 4, 5]);
         });
 
         Gate::define('payment_access', function ($user) {
-            return in_array($user->role_id, [1, 2, 3]);
+            return in_array($user->role_id, [1, 2, 3, 4, 5]);
         });
     }
 }

@@ -128,8 +128,8 @@
                     layout = "\
                     <tr>\
                     <td>"+ dt.doctor_name +"</td>\
-                    <td>"+ dt.first_name +"</td>\
-                    <td>"+ dt.last_name +"</td>\
+                    <td><a href='/admin/patients/create?id="+dt.patient_id+"'>"+ dt.first_name +"</a></td>\
+                    <td><a href='/admin/patients/create?id="+dt.patient_id+"'>"+ dt.last_name +"</a></td>\
                     <td class='file_list'>"+ fileList +"</td>\
                     <td>"+ dt.report_date +"</td>\
                     <td class='optionz'>\

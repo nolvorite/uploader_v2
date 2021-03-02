@@ -13,10 +13,11 @@ class RoleSeed extends Seeder
     {
         $items = [
             
-            ['id' => 1, 'title' => 'Administrator (can create other users)',],
-            ['id' => 2, 'title' => 'Simple user',],
-            ['id' => 3, 'title' => 'Premium user', 'price' => 9.99, 'stripe_plan_id' => 'premium',],
-
+            ['id' => 1, 'title' => 'Administrator (can create other users)'],
+            ['id' => 2, 'title' => 'Simple User'],
+            ['id' => 3, 'title' => 'File Manager'],
+            ['id' => 4, 'title' => 'ROR Supervisor'],
+            ['id' => 5, 'title' => 'ROR Employee'],
         ];
 
         foreach ($items as $item) {

@@ -33,7 +33,6 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'admin', 'as' => 'admin.'], 
 
     Route::resource('folders', 'Admin\FoldersController');
 
-
     Route::resource('patients','Admin\PatientsController');
 
     Route::post('new_patient', ['uses' => 'Admin\PatientsController@newPatient']);
@@ -43,7 +42,6 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'admin', 'as' => 'admin.'], 
     Route::post('list_files', ['uses' => 'Admin\PatientsController@listFiles']);
 
     Route::post('search_users', ['uses' => 'Admin\PatientsController@searchUsers']);
-    
 
     Route::post('folders_mass_destroy', ['uses' => 'Admin\FoldersController@massDestroy', 'as' => 'folders.mass_destroy']);
 
@@ -56,6 +54,11 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'admin', 'as' => 'admin.'], 
 
     Route::delete('folders_perma_del/{id}', ['uses' => 'Admin\FoldersController@perma_del', 'as' => 'folders.perma_del']);
     Route::resource('files', 'Admin\FilesController');
+
+    Route::get('list_of_files_ror', ['uses' => 'Admin\FilesController@listFilesROR']);
+    Route::get('assign_file_ror', ['uses' => 'Admin\FilesController@assignFilesROR']);
+    Route::get('file_manager', ['uses' => 'Admin\FilesController@fileManager']);
+
     //Route::post('folders/getFolderList', ['uses' => 'Admin\FoldersController@getFolderList', 'as' => 'folders.getFolderList']);
     Route::get('/{uuid}/download', 'Admin\DownloadsController@download');
     Route::post('files_mass_destroy', ['uses' => 'Admin\FilesController@massDestroy', 'as' => 'files.mass_destroy']);

@@ -3,21 +3,21 @@
 
 
 @section('content')
-    <h3 class="page-title">@lang('quickadmin.files.title')</h3>
+    <h3 class="page-title">File Manager</h3>
     {!! Form::open(['method' => 'POST', 'route' => ['admin.files.store'], 'files' => true,]) !!}
 
     <div class="panel panel-default">
-        <div class="panel-heading">
+        <!--<div class="panel-heading">
             @lang('quickadmin.qa_create')
-        </div>
+        </div> -->
 
         <div class="panel-body">
             <div class="row">
-                <div class="col-xs-12 form-group">
+                <!-- <div class="col-xs-12 form-group">
                 <label class="control-label">Uploading Guide</label>
                 <p>Hello. First select a folder, then pick the files that you want to upload. You will be notified when the files are done uploading.</p>
                 <p>If you have no more files to upload, simply click "Go Back" to see your new files.</p>
-                </div>
+                </div> -->
                 <div class="col-xs-12 form-group">
                     {!! Form::label('folder_id', trans('quickadmin.files.fields.folder').'*', ['class' => 'control-label']) !!}
                     <select class="form-control select2" required="" id="folder_id" name="folder_id">
@@ -71,7 +71,7 @@
         </div>
     </div>
 
-    <a href="{{ url('admin/files') }}" class="btn btn-success">Finish Uploading</a>
+    <!-- <a href="{{ url('admin/files') }}" class="btn btn-success">Finish Uploading</a> -->
 
     {!! Form::close() !!}
 @stop

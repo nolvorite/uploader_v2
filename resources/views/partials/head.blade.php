@@ -29,6 +29,7 @@
 <link href="{{ url('adminlte/css/AdminLTE.min.css') }}" rel="stylesheet">
 <link href="{{ url('adminlte/css/custom.css') }}" rel="stylesheet">
 <link href="{{ url('adminlte/css/skins/skin-blue.min.css') }}" rel="stylesheet">
+
 <link rel="stylesheet"
       href="https://code.jquery.com/ui/1.11.3/themes/smoothness/jquery-ui.css">
 <link rel="stylesheet"
@@ -42,8 +43,11 @@
 <link rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.0/css/bootstrap-datepicker.standalone.min.css"/>
 
+<link href="{{ url('js/dropzone/basic.css') }}" rel="stylesheet">
+<link href="{{ url('js/dropzone/dropzone.css') }}" rel="stylesheet">
+
 <style type="text/css">
-     .form-inline.dropdown-segment {
+      .form-inline.dropdown-segment {
           display: inline-block;
       }
 
@@ -59,13 +63,27 @@
 
       #drag_drop_box {
           background: #c0c0c0;
-          /* min-height: 100px; */
+          min-height: auto;
           border-radius: 5px;
           box-shadow: inset 0 10px 10px rgba(0,0,0,.2);
-          font-size: 30px;
           padding: 20px 0;
           text-align: center;
       }
+
+      #drag_drop_box h2{margin:0;font-size:200%;font-weight:bold;}
+
+      .dz-default.dz-message {
+    margin: 0;
+    font-size: 200%;
+    font-weight: bold;
+}
+
+ul#listof_files {
+    max-height: 200px;
+    overflow: auto;
+}
+
+#full_path_display{text-decoration: underline}
 
 </style>
 

@@ -135,8 +135,7 @@ class PatientsController extends Controller
         $response = 'Successful addition.';
 
         $files = $request->input('files');
-
-
+        
         //first name, last name
         //report date
 
@@ -227,6 +226,9 @@ class PatientsController extends Controller
         }
 
         if($action === "add"){
+
+
+
             $patientEntry = DB::table('patient_entries')->insertGetId([
                 'report_date' => DB::Raw("STR_TO_DATE('$reportDate','%m/%d/%Y')"),
                 'first_name' => $firstName,

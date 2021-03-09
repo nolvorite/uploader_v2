@@ -82,7 +82,6 @@ class FoldersController extends Controller
                 }
                 catch (\Exception $e){
                     $returnVal['error'] = $e->getMessage();
-
                 }      
             }
         }else {

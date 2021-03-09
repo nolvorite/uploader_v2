@@ -42,6 +42,19 @@
                     <ul id="listof_files">
                     </ul>
                 </div>
+                <div id="misc_options" class="hide">
+                    <div class="panel-heading"><strong>Miscellaneous Options</strong></div>
+                    <div class="panel-body">
+                        <ul>
+                            <li><button class="btn btn-success" id="download_folder">View List of Zip Compilations</button>
+                            <div id="link_generator_notice" class="hide">Please wait. Generating links...</div>
+                            <ul id="compilation_list">
+                                
+                            </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
             </div>
 

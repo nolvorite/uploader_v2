@@ -70,7 +70,7 @@
                                         <span><strong>Time Created:</strong> <span class='time_created'>{{ $file->created_at }}</span></span>
                                     </p>
                                 </td>
-                            <td field-key='folder'><a href="{{url('admin/files?currentBasePath='.$file->folder_creator.'/'.$file->folder_name)}}">{{ $file->folder_name }}</td>
+                            <td field-key='folder'><a href="{{url('admin/files?currentBasePath='.$file->folder_creator.'/'.$file->folder_name)}}">{{ $file->folder_name }}</a></td>
 
                             @if( $view === "all" && Auth::getUser()->role_id === 1 )
                             <td field-key='email'>{{ $file->email or '' }}</td>

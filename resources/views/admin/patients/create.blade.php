@@ -45,7 +45,7 @@
                     </div>
                 </div>
 
-                <div class="row"><br>
+                <div class="row hide" id="files_view"><br>
                     <div class="col-xs-6 form-group">
                         {!! Form::label('filename', 'PDF File', ['class' => 'control-label']) !!}
                         {!! Form::file('filename[]', [
@@ -90,6 +90,7 @@
                     </div>
                     <div class="col-xs-12 form-group">
                         {!! Form::label('filename', 'Other Files', ['class' => 'control-label']) !!}
+                        <div>
                         {!! Form::file('filename[]', [
                             'multiple',
                             'name' => 'other_files[]',
@@ -99,11 +100,13 @@
                             'data-filekey' => 'filename',
                             'id' => 'my_id',
                             ]) !!}
+                        </div>
                         <p class="help-block"></p>
                         <div class="photo-block">
                             <div class="progress-bar form-group">&nbsp;</div>
                             <div class="files-list"></div>
                         </div>
+                        <div id="drag_drop_box"></div>
                         @if($errors->has('filename'))
                             <p class="help-block">
                                 {{ $errors->first('filename') }}
@@ -204,6 +207,23 @@ Thank you for understanding,
     <script>
         $(document).ready(function () {
 
+            $("#drag_drop_box").addClass("dropzone").dropzone({
+                url: siteUrl+"admin/spatie/media/upload", 
+                uploadMultiple: true,
+                paramName: 'filename',
+                params: function(){
+                    return {
+                        _token: window._token,
+                        path: fullPath,
+                        bucket: 'filename',
+                        file_key: 'filename',
+                        model_name: 'File',
+                        folder_id: $("#folder_id").val()
+                    }
+                },
+                success: displayWhenUploadFinishes2
+            });
+
             <?php if(count($patientJSONData) > 0){ ?>
 
             patientData = {!! json_encode($patientJSONData) !!};
@@ -217,6 +237,7 @@ Thank you for understanding,
 
             //fileIds = []; 
             fileData = [];
+            dataFromDrops = [];
 
             var exfiles = '<?php echo $userFilesCount; ?>';
             var existingFiles = Number(exfiles);
@@ -296,7 +317,7 @@ Thank you for understanding,
             $("#folder_id").select2().on("select2:select",function(e){
                 data= e.params.data;
                 console.log(data,e);
-                $("#subfolder_view").removeClass("hide");
+                $("#subfolder_view,#files_view").removeClass("hide");
 
                 emailToAddInRecipients = /^([^\/]+)/.exec(data.text)[1];
 
@@ -342,6 +363,10 @@ Thank you for understanding,
 
                 action = !isEditingPatientEntry ? "add" : "edit";
 
+                for(i in dataFromDrops){
+                    fileData.push(dataFromDrops[i]);
+                }
+
                 $.post(
                     siteUrl+"admin/new_patient",
                      {first_name: firstName, last_name: lastName, report_date: reportDate, doctor_name: doctorName, files: fileData, email: emailAddress, recipients: recipients, action: action, patient_id: patientId, email_message: emailMessage,_token: window._token}
@@ -381,6 +406,7 @@ Thank you for understanding,
                             $("#compile_all_files").val("Finish Adding Files");
 
                             fileData = data.files;
+
                             // $.each(data.result.files, function (index, file) {
                             //     var $line = $($('<p/>', {class: "form-group"}).html(file.name + ' (' + file.size + ' bytes)').appendTo($parent.find('.files-list')));
                             //     if ($parent.find('.' + $this.data('bucket') + '-ids').val() != '') {
@@ -419,35 +445,6 @@ Thank you for understanding,
 
                 if($("#folder_id").val() !== "" && $("#folder_id").val() !== null){
 
-                    //$(this).fileupload('enable');
-
-                    // $(this).fileupload('option','formData').folder_id = $("#folder_id").val();
-                    // $(this).fileupload('option','formData').path = fullPath;
-
-                    //fileIds = $(this).fileupload('option','fileIds').file_ids
-                    // $(this).fileupload('option','fileIds').folderId
-
-                    //$(this).fileupload();
-
-                    // $('.file-upload').each(function () {
-                    //     var $this = $(this);
-
-                    //     $(this).fileupload({
-                    //         dataType: 'json',
-                    //         formData: (function(){ return {
-                    //             model_name: 'File',
-                    //             bucket: $this.data('bucket'),
-                    //             file_key: $this.data('filekey'),
-                    //             _token: '{{ csrf_token() }}',
-                    //             folder_id: $("#folder_id").val()
-                    //         }})(),
-
-                    //         add: function (e, data) {
-                    //             data.abort();
-                    //         }
-                    //     })
-                    // });
-                    
 
                 }else{
                     alert("Please select a folder first.");
@@ -455,71 +452,7 @@ Thank you for understanding,
                 
             });
 
-            // $('.file-upload').each(function () {
-            //     var $this = $(this);
-            //     var $parent = $(this).parent();
-
-                
-
-            //     $(this).fileupload({
-            //         dataType: 'json',
-            //         url: $this.data('url'),
-            //         formData: (function(){
-            //             console.log($("#folder_id").val());
-            //             return {
-            //                 model_name: 'File',
-            //                 bucket: $this.data('bucket'),
-            //                 file_key: $this.data('filekey'),
-            //                 _token: '{{ csrf_token() }}',
-            //                 folder_id: $("#folder_id").val(),
-            //                 path: fullPath
-            //             }
-            //         })(),
-
-            //         add: function (e, data) {
-            //             data.submit();
-            //         },
-            //         fail: function(e, data){
-            //             console.log(data);
-            //             alert("Error uploading file. Please try again later.");
-            //         },
-            //         done: function (e, data) {
-            //             counter++;
-            //             if(counter === data.result.files.length){
-            //                 alert("All files have finished uploading!");
-            //             }
-            //             $.each(data.result.files, function (index, file) {
-            //                 var $line = $($('<p/>', {class: "form-group"}).html(file.name + ' (' + file.size + ' bytes)').appendTo($parent.find('.files-list')));
-            //                 if ($parent.find('.' + $this.data('bucket') + '-ids').val() != '') {
-            //                     $parent.find('.' + $this.data('bucket') + '-ids').val($parent.find('.' + $this.data('bucket') + '-ids').val() + ',');
-            //                 }
-            //                 $parent.find('.' + $this.data('bucket') + '-ids').val($parent.find('.' + $this.data('bucket') + '-ids').val() + file.id);
-            //             });
-            //             $parent.find('.progress-bar').hide().css(
-            //                 'width',
-            //                 '0%'
-            //             );
-            //             getListOfFiles(fullPath);
-            //         }
-
-            //     }).on('fileuploadprogressall', function (e, data) {
-            //         var progress = parseInt(data.loaded / data.total * 100, 10);
-            //         $parent.find('.progress-bar').show().css(
-            //                 'width',
-            //                 progress + '%'
-            //         );
-            //     });
-
-            //     $(this).fileupload('disable');
-
-            // });
-
-
-            // $(document).on('click', '.remove-file', function () {
-            //     var $parent = $(this).parent();
-            //     $parent.remove();
-            //     return false;
-            // });
+       
         });
     </script>
 @stop

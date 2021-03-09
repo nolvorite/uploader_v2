@@ -50,6 +50,7 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'admin', 'as' => 'admin.'], 
     Route::post('basic_list', ['uses' => 'Admin\FoldersController@getListOfFiles', 'as' => 'folders.basic_list']);
     Route::post('folders_restore/{id}', ['uses' => 'Admin\FoldersController@restore', 'as' => 'folders.restore']);
 
+
     
 
     Route::delete('folders_perma_del/{id}', ['uses' => 'Admin\FoldersController@perma_del', 'as' => 'folders.perma_del']);
@@ -57,7 +58,23 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'admin', 'as' => 'admin.'], 
 
     Route::get('list_of_files_ror', ['uses' => 'Admin\FilesController@listFilesROR']);
     Route::get('assign_file_ror', ['uses' => 'Admin\FilesController@assignFilesROR']);
+
+    //file manager actions
     Route::get('file_manager', ['uses' => 'Admin\FilesController@fileManager']);
+    Route::get('get_as_downloadable', ['uses' => 'Admin\FilesController@getAsDownloadable']);
+    Route::post('download_folder', ['uses' => 'Admin\FilesController@downloadFolder']);
+    Route::post('generate_download_link', ['uses' => 'Admin\FilesController@generateDownloadLink']);
+
+    //jsons/ROR actions
+    Route::post('assign_as_remark', ['uses' => 'Admin\FilesController@assignAsRemark']);
+    Route::post('submit_assignments', ['uses' => 'Admin\FilesController@submitAssignments']);
+    Route::post('delete_assignment', ['uses' => 'Admin\FilesController@deleteAssignment']);
+    Route::post('mark_as_complete', ['uses' => 'Admin\FilesController@markAsComplete']);
+    Route::post('reset_as_pending', ['uses' => 'Admin\FilesController@resetAsPending']);
+    //--------fetch data
+    Route::post('list_of_employees', ['uses' => 'Admin\FilesController@listOfEmployeesROR']);
+    Route::post('list_of_unassigned_files', ['uses' => 'Admin\FilesController@listOfUnassignedFilesROR']);
+    Route::post('list_of_eligible_files_for_remark', ['uses' => 'Admin\FilesController@listOfEligibleFilesForRemark']);
 
     //Route::post('folders/getFolderList', ['uses' => 'Admin\FoldersController@getFolderList', 'as' => 'folders.getFolderList']);
     Route::get('/{uuid}/download', 'Admin\DownloadsController@download');

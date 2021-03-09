@@ -108,7 +108,7 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         Gate::define('ror_maintenance', function ($user) {
-            return in_array($user->role_id, [1, 5]);
+            return in_array($user->role_id, [1, 4, 5]);
         });
 
         Gate::define('file_manager', function ($user) {

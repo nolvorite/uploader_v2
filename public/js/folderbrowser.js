@@ -18,6 +18,10 @@ var getParams = function (url) {
 	return params;
 };
 
+var isFileManagerPage = function(){
+	return typeof isFileManager !== "undefined";
+}
+
 function clickToPath(currentBasePath){
 	manualTrigger = true;
 	pathFolders = currentBasePath.split("/");
@@ -40,9 +44,46 @@ function addNewFolder(fullPath,name){
 	});
 }
 
-function getListOfFiles(fullPath){
+function displayWhenUploadFinishes2(e, data) {
+	console.log(e,data);
+
+	for(i in data.files){
+		dataFromDrops[dataFromDrops.length] = data.files[i];
+	}
+
+	getListOfFiles(fullPath);
+}
+
+function displayWhenUploadFinishes(e, data) {
+	$this = $(e.target);
+	$parent = $(e.target).parent();
+
+	counter++;
+	if(counter === data.result.files.length){
+	    alert("All files have finished uploading!");
+	}
+	$.each(data.result.files, function (index, file) {
+	    var $line = $($('<p/>', {class: "form-group"}).html(file.name + ' (' + file.size + ' bytes)').appendTo($parent.find('.files-list')));
+	    if ($parent.find('.' + $this.data('bucket') + '-ids').val() != '') {
+	        $parent.find('.' + $this.data('bucket') + '-ids').val($parent.find('.' + $this.data('bucket') + '-ids').val() + ',');
+	    }
+	    $parent.find('.' + $this.data('bucket') + '-ids').val($parent.find('.' + $this.data('bucket') + '-ids').val() + file.id);
+	});
+	$parent.find('.progress-bar').hide().css(
+	    'width',
+	    '0%'
+	);
+	getListOfFiles(fullPath);
+}
+
+function getListOfFiles(fullPath,triggerListOfFiles = false){
 	$.post(siteUrl+"admin/basic_list",{_token:window._token,path: fullPath},function(results){
 		$("#listof_files").html('');
+
+		if(isFileManagerPage()){
+			$("#misc_options").removeClass('hide');
+
+		}
 
 		for(index in results.data.directories){
 			name = results.data.directories[index].replace(results.fullPath,"");
@@ -51,8 +92,16 @@ function getListOfFiles(fullPath){
 		for(index in results.data.files){
 			name = results.data.files[index].replace(results.fullPath,"");
 
-			$("#listof_files").append("<li><i class=\"fa fa-file-excel-o\" aria-hidden=\"true\"></i>&nbsp;<a target='_blank' href='"+siteUrl+encodeURI(results.link)+"/"+encodeURI(name)+"'>"+name+"</a></li>");
+			downloadLink = isFileManagerPage() ? " <a target='_blank' class='btn btn-primary btn-xs download-link' href='"+siteUrl+"admin/get_as_downloadable?link="+encodeURI(results.link)+"/"+encodeURI(name)+"'>Download</a>" : "";
+
+			$("#listof_files").append("<li><i class=\"fa fa-file-excel-o\" aria-hidden=\"true\"></i>&nbsp;<a target='_blank' href='"+siteUrl+encodeURI(results.link)+"/"+encodeURI(name)+"'>"+name+"</a> "+downloadLink+"</li>");
 		}
+
+		
+
+		$("#compilation_list").empty();
+		$("#link_generator_notice").empty();
+
 	});
 }
 
@@ -194,6 +243,31 @@ $(document).ready(function(){
 	directoryScout();
 })
 
+function loadZipCompilations(){
+	$("#compilation_list").empty();
+	$.post(siteUrl+"admin/download_folder",{_token:window._token,path: fullPath},function(results){
+		downloadNotice = results.message;
+		downloadNotice += " <button class='btn btn-danger btn-xs' id='generate_download_link'>Create New Download Link</a>";
+		$("#link_generator_notice").html(downloadNotice);
+		if(results.status){
+			for(i in results.download_links){
+				dt = results.download_links[i];
+				//highlight the most recent link
+				highlightClauses = (i+"" === "0" && results.download_links.length > 0) ? 
+				['<b>','</b>',' (Newest)']
+				:
+				['','','']
+				  ;
+
+				$("#compilation_list").append("<li>\
+				"+highlightClauses[0]+"<a href='"+siteUrl+"storage/"+dt.full_path_and_file+"'>"+dt.full_path_and_file.replace('zips/FOLDER_COMPILED_','').replace('.zip','')+""+highlightClauses[2]+"</a>"+highlightClauses[1]+"\
+				</li>");
+			}
+		}
+
+	},"json");
+}
+
 
 
 $("body").on("click",".goto-tab",function(event){
@@ -239,5 +313,30 @@ $("body").on("click","#goto_folder",function(){
 });
 
 fullPath = "";
+
+$(document).ready(function(){
+	if(isFileManagerPage()){
+
+	$("body").on("click","#generate_download_link",function(event){
+		event.preventDefault();
+		$.post(siteUrl+"admin/generate_download_link",{_token:window._token},function(results){
+			if(results.status){
+				//getListOfFiles(fullPath,true);
+				if(isFileManagerPage()){
+					loadZipCompilations();
+				}
+			}else{
+				alert("Failed to generate download link.");
+			}
+		});
+	});
+
+	$("body").on("click","#download_folder",function(event){
+		event.preventDefault();
+		$("#link_generator_notice").removeClass("hide");
+		loadZipCompilations();
+	});
+}
+})
 
 //UPDATE files SET path = CONCAT((SELECT users.email FROM users WHERE users.id = created_by_id),'/',(SELECT folders.name FROM folders WHERE folders.id = folder_id))

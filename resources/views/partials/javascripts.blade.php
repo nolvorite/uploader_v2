@@ -22,6 +22,7 @@
 <script src="{{ url('adminlte/js') }}/bootstrap.min.js"></script>
 <script src="{{ url('adminlte/js') }}/select2.full.min.js"></script>
 <script src="{{ url('adminlte/js') }}/main.js"></script>
+<script src="{{ url('js/dropzone/min') }}/dropzone.min.js"></script>
 
 
 

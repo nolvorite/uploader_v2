@@ -78,8 +78,6 @@
 
             <?php if (
                 app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('ror_supervision')
-                ||
-                app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('ror_maintenance')
             ): ?> 
             <li class="{{ $request->segment(2) == 'assign_file_ror' ? 'active' : '' }}">
                 <a href="{{ url('admin/assign_file_ror') }}">
@@ -87,6 +85,12 @@
                     <span class="title">Assign Files</span>
                 </a>
             </li>
+
+            <?php endif; ?>
+
+            <?php if (
+                app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('ror_maintenance')
+            ): ?> 
 
             <li class="{{ $request->segment(2) == 'list_of_files_ror' ? 'active' : '' }}">
                 <a href="{{ url('admin/list_of_files_ror') }}">

@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreFilesRequest;
 use App\Http\Requests\Admin\UpdateFilesRequest;
 use App\Http\Controllers\Traits\FileUploadTrait;
+use Illuminate\Support\Facades\Response;
 
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Input;
@@ -108,8 +109,347 @@ class FilesController extends Controller
         return view('admin.files.create', compact('folders', 'created_bies', 'userFilesCount', 'roleId', 'folderId'));
     }
 
+    public function listOfEmployeesROR(Request $request){
+        if(!Gate::allows('ror_supervision')){
+            return abort(401);
+        }
+
+        $data = ['action' => 'listOfEmployeesROR'];
+        $data['data'] = DB::table("users")->select("email","id","name",DB::Raw('(SELECT COUNT(*) FROM file_assignments WHERE file_assignments.user_id = users.id AND file_assignments.status != \'complete\') as assigned_file_count'))->where("role_id",5)->get();
+
+        return response()->json($data);
+    }
+
+    public function getAsDownloadable(Request $request){
+        if(!Gate::allows('file_manager')){
+            return abort(401);
+        }
+
+        $path = $request->get('link');
+
+        return Response::download($path);
+
+    }
+
+    public function generateDownloadLink(){
+        if(!Gate::allows('file_manager')){
+            return abort(401);
+        }
+
+        $result = ['status' => false];
+
+        $currentDate = date("Y-m-d")."-".microtime(true);
+
+        $fileName = "FOLDER_COMPILED_".$currentDate;
+
+        $pathToGet = session('current_path');
+
+        $uploadingUnderFolderPath = storage_path("app\public\zips");
+
+        if(!file_exists($uploadingUnderFolderPath)){
+            
+            try {
+                mkdir($uploadingUnderFolderPath, 0775);
+                $zipsDirExists = true;
+            }
+            catch (\Exception $e){
+                $zipsDirExists = false;
+                $result['error'] = $e->getMessage();
+            } 
+
+        }else{
+            $zipsDirExists = true;
+        }
+
+        if($zipsDirExists){
+            // dd(
+            //     storage_path("app\public\zips\\".$fileName.'.zip'),
+            //     storage_path("app\public\\".$pathToGet.'/*')
+            // );
+
+            \Zipper::make(storage_path("app\public\zips\\".$fileName.'.zip'))->add(glob(storage_path("app\public\\".$pathToGet.'/*')))->close();
+
+            try {
+
+                //check to see if file was actually created
+                $size = \File::size(storage_path("app\public\zips\\".$fileName.'.zip'));
+
+                DB::table("zips")->insert([
+                    'created_by_id' => auth()->user()->id,
+                    'full_path_and_file' => "zips/".$fileName.".zip",
+                    'path_of_folder' => $pathToGet,
+                    'file_size' => $size
+                ]);
+
+                $result = ['status' => true];
+
+            }catch(Exception $e){
+                $result['error'] = $e->getException();
+            }
+
+            
+
+        }
+
+        return Response::json($result);
+
+    }
+
+    public function downloadFolder(Request $request){
+        if(!Gate::allows('file_manager')){
+            return abort(401);
+        }
+
+        $data = ['status' => false, 'download_links' => [], 'already_existed' => false, 'message' => ''];
+        $path = $request->get('path');
+
+        session(['current_path' => $path]);
+
+        //first, search
+        $listofZipsForThisFolder = DB::table('zips')->where("path_of_folder",$path)->orderBy('id','DESC')->get();
+
+        if(count($listofZipsForThisFolder) > 0){
+            $data['status'] = true;
+            $data['download_links'] = $listofZipsForThisFolder;
+            $data['message'] = "There are ". count($listofZipsForThisFolder) ." zips for this folder.";
+        }else{
+            $data['message'] = "There are no zips for this folder. Would you like to make one?";
+        }
+
+        return response()->json($data);
+
+    }
+
+    public function listOfUnassignedFilesROR(Request $request){
+        if(!Gate::allows('ror_supervision')){
+            return abort(401);
+        }
+        DB::enableQueryLog();
+
+        $excludeCheck = Input::post('exclude') !== null;
+
+        $queryCheck = Input::post('user_id') !== null ? Input::post('user_id') : null;
+
+        if(!$excludeCheck && $queryCheck){
+            session(['user_id_temp' => $queryCheck]);
+        }
+
+        $additionalColumns = $queryCheck !== null && !$excludeCheck ?
+
+        ",patient_entries.first_name as pfn, patient_entries.last_name as pln, file_assignments.deadline, file_assignments.remarks, (SELECT COUNT(*) FROM file_assignments WHERE file_assignments.file_id = f.id) as assignees, file_assignments.id as fa_id"
+
+        :
+
+        ",patient_entries.first_name as pfn, patient_entries.last_name as pln, (SELECT COUNT(*) FROM file_assignments WHERE file_assignments.file_id = f.id) as assignees";
+
+        $data = ['action' => 'listOfUnassignedFilesROR'];
+
+        $dataFetcher = $this
+
+            ->fileTable($additionalColumns)
+            ->join("patient_entries","patient_entries.patient_id","=","f.patient_id");
+
+        if($queryCheck !== null && !$excludeCheck){
+
+            $dataFetcher = $dataFetcher->join("file_assignments","file_assignments.file_id","=","f.id")->where("file_assignments.user_id", $queryCheck);
+
+        }else{
+
+            $dataFetcher = $dataFetcher->leftJoin("file_assignments","file_assignments.file_id","=","f.id");
+
+            if(!$excludeCheck){
+                //
+            }else{
+                $dataFetcher = $dataFetcher->where(function($query){
+                    $query->whereNotIn("file_assignments.user_id",[session('user_id_temp')])->orWhereNull("file_assignments.user_id");
+                });
+
+                
+            }
+           
+        }
+
+        $data['data'] = $dataFetcher
+
+            //->where("file_assignments.status","!=","complete")
+            
+            ->orderBy("assignees","ASC")
+
+            ->get();
+
+
+        //dd(DB::getQueryLog());
+
+
+        return response()->json($data);
+    }
+
+
+
+    public function deleteAssignment(Request $request){
+        if(!Gate::allows('ror_supervision')){
+            return abort(401);
+        }
+
+        $data = ['status' => false, 'fa_id' => $request->get('fa_id')];
+
+
+
+        $deleter = DB::table("file_assignments")->where("id",$request->get('fa_id'))->delete();
+
+        $data['status'] = true;
+        
+
+        return response()->json($data);
+    }
+
+    public function submitAssignments(Request $request){
+        if(!Gate::allows('ror_supervision')){
+            return abort(401);
+        }
+
+        $data = ['status' => false];
+
+        foreach($request->get("file_ids") as $key => $val){
+            $deleter = DB::table("file_assignments")->insert([
+                'user_id' => $request->get('employee_id'),
+                'file_id' => $val,
+                'remark_file_id' => 0,
+                'remarks' => '',
+                'patient_id' => '0',
+                'deadline' => DB::Raw("STR_TO_DATE('". $request->get('deadline') ."','%m/%d/%Y')")
+            ]);
+        }
+
+        $data['status'] = true;
+
+        return response()->json($data);
+    }
+
+    public function listOfEligibleFilesForRemark(Request $request){
+        if(!Gate::allows('ror_maintenance')){
+            return abort(401);
+        }
+
+        $userId = auth()->user()->id;
+
+        $results = ['status' => true];
+        
+        $dataSample = $this->fileTable();
+
+        $dataSample = $dataSample
+
+        ->where(function($query){
+            $query
+            ->whereNull("patient_id")
+            ->orWhere("patient_id","0");
+        })
+
+        ->where("f.created_by_id",$userId)
+
+        ;
+
+        $dataSample = $dataSample->orderBy("f.id","DESC");
+
+        $dataSample = $dataSample->get();
+
+        $results['data'] = $dataSample;
+
+        return response()->json($results);
+
+    }
+
+    public function resetAsPending(Request $request){
+        if(!Gate::allows('ror_supervision')){
+            return abort(401);
+        }
+
+        $data = ['status' => true, 'message' => ''];
+        $assignmentId = $request->get("assignment_id");
+
+        DB::table('file_assignments')->where("id",$assignmentId)->update(["status"=>"pending"]);
+
+        $data['message'] = "File Assignment reset to pending.";
+
+        return response()->json($data);
+
+    }
+
+    public function assignAsRemark(Request $request){
+        if(!Gate::allows('ror_maintenance')){
+            return abort(401);
+        }
+        $data = ['status' => false, 'message' => ''];
+
+        $assignmentId = $request->get('assignment_id');
+        $fileId = $request->get('file_id');
+
+        if(!Gate::allows('ror_supervision')){
+            
+            $validityCheck = DB::table('file_assignments')->where(['user_id' => auth()->user()->id, 'id' => $assignmentId])->get();
+
+            $validityCheck2 = DB::table('files')->where(['created_by_id' => auth()->user()->id, 'id' => $fileId])->get();
+
+            if(count($validityCheck) > 0 && count($validityCheck2) > 0){
+                $data['status'] = true;
+                DB::table('file_assignments')->where("id",$assignmentId)->update(["remark_file_id"=>$fileId]);
+                $data['message'] = "Marked as Remark file.";
+            }
+
+        }else{
+
+            DB::table('file_assignments')->where("id",$assignmentId)->update(["remark_file_id"=>$fileId]);
+            $data['status'] = true;
+            $data['message'] = "Successfully marked as complete.";
+
+        }
+
+        return response()->json($data);
+
+    }
+
+    public function markAsComplete(Request $request){
+        if(!Gate::allows('ror_maintenance')){
+            return abort(401);
+        }
+        $data = ['status' => false, 'message' => ''];
+
+        $assignmentId = $request->get('assignment_id');
+
+        if(!Gate::allows('ror_supervision')){
+            
+            $validityCheck = DB::table('file_assignments')->where(['user_id' => auth()->user()->id, 'id' => $assignmentId])->get();
+            
+            if(count($validityCheck) > 0){
+                $data['status'] = true;
+                DB::table('file_assignments')->where("id",$assignmentId)->update(["status"=>"approval_check"]);
+                $data['message'] = "Successfully marked as complete. This is still pending approval by a supervisor, however.";
+            }
+
+        }else{
+
+            DB::table('file_assignments')->where("id",$assignmentId)->update(["status"=>"complete"]);
+            $data['status'] = true;
+            $data['message'] = "Successfully marked as complete.";
+
+        }
+
+        return response()->json($data);
+
+    }
+
     public function listFilesROR(Request $request){
-        return view('admin.files.ror');
+        if(auth()->user()->role_id === 5){
+            $rorList = $this->patientAssignments(auth()->user()->id,$request->has('show_completed'));
+        }else if(preg_match("#^1|4$#",auth()->user()->role_id)){
+            $rorList = $this->patientAssignments(null,$request->has('show_completed'));
+        }
+
+        $rorList = $rorList->join("patient_entries","patient_entries.patient_id","=","f.patient_id")->get();
+
+
+        
+        return view('admin.files.ror', compact('rorList'));
     }
 
     public function assignFilesROR(Request $request){

@@ -193,6 +193,12 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
 
+        /*
+        *  Third Party
+        */
+
+        Chumper\Zipper\ZipperServiceProvider::class
+
     ],
 
     /*

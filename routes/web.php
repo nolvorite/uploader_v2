@@ -71,6 +71,9 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'admin', 'as' => 'admin.'], 
     Route::post('delete_assignment', ['uses' => 'Admin\FilesController@deleteAssignment']);
     Route::post('mark_as_complete', ['uses' => 'Admin\FilesController@markAsComplete']);
     Route::post('reset_as_pending', ['uses' => 'Admin\FilesController@resetAsPending']);
+    Route::post('finish_editing_remark', ['uses' => 'Admin\FilesController@finishEditingRemark']);
+    Route::post('edit_remark', ['uses' => 'Admin\FilesController@editRemark']);
+    
     //--------fetch data
     Route::post('list_of_employees', ['uses' => 'Admin\FilesController@listOfEmployeesROR']);
     Route::post('list_of_unassigned_files', ['uses' => 'Admin\FilesController@listOfUnassignedFilesROR']);

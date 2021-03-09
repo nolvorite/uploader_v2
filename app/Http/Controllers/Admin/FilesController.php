@@ -42,7 +42,7 @@ class FilesController extends Controller
             }
         }
 
-        $default = auth()->user()->role_id === 1 ? 'all' : 'my';
+        $default = Gate::allows('file_manager') ? 'all' : 'my';
         $email = auth()->user()->email;
 
         $view = $default;
@@ -409,7 +409,7 @@ class FilesController extends Controller
     }
 
     public function markAsComplete(Request $request){
-        if(!Gate::allows('ror_maintenance')){
+        if(!Gate::allows('ror_supervision')){
             return abort(401);
         }
         $data = ['status' => false, 'message' => ''];
@@ -438,6 +438,36 @@ class FilesController extends Controller
 
     }
 
+    public function finishEditingRemark(Request $request){
+        if(!Gate::allows('ror_supervision')){
+            return abort(401);
+        }
+
+        $data = ['status' => true, 'contents' => ''];
+        $assignmentId = $request->get('assignment_id');
+        $contents = $request->get('contents');
+        $getRemarks = DB::table('file_assignments')->where('id',$assignmentId)->update(["remarks"=>$contents]);
+
+        $data['contents'] = $contents;
+
+        return response()->json($data);
+
+    }
+
+    public function editRemark(Request $request){
+        if(!Gate::allows('ror_supervision')){
+            return abort(401);
+        }
+
+        $data = ['status' => true, 'contents' => ''];
+        $assignmentId = $request->get('assignment_id');
+        $getRemarks = DB::table('file_assignments')->where('id',$assignmentId)->first();
+
+        $data['contents'] = $getRemarks->remarks;
+
+        return response()->json($data);
+    }
+
     public function listFilesROR(Request $request){
         if(auth()->user()->role_id === 5){
             $rorList = $this->patientAssignments(auth()->user()->id,$request->has('show_completed'));
@@ -446,8 +476,6 @@ class FilesController extends Controller
         }
 
         $rorList = $rorList->join("patient_entries","patient_entries.patient_id","=","f.patient_id")->get();
-
-
         
         return view('admin.files.ror', compact('rorList'));
     }
@@ -458,7 +486,7 @@ class FilesController extends Controller
 
     public function fileManager(Request $request)
     {
-        if (!Gate::allows('file_create')) {
+        if (!Gate::allows('file_manager')) {
             return abort(401);
         }
         
@@ -469,7 +497,7 @@ class FilesController extends Controller
 
 
         $created_bies = \App\User::get()->pluck('name','id')->prepend(trans('quickadmin.qa_please_select'), '');
-        $folders = \App\Folder::select("users.email","folders.name","folders.id")->join("users","folders.created_by_id","=","users.id")->get();
+        $folders = DB::table('folders')->select("users.email","folders.name","folders.id")->join("users","folders.created_by_id","=","users.id")->get();
 
         return view('admin.files.manage', compact('folders', 'created_bies', 'userFilesCount', 'roleId', 'folderId'));
     }

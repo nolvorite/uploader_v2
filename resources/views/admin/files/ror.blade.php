@@ -20,7 +20,7 @@
                         <th>Files
                         </th>
                         <th>Due Date</th>
-                        <th>Remark File</th>
+                        <th>Remark File/Remarks</th>
                         <th>Actions</th>
                     </tr></thead>
                 <tbody>
@@ -37,6 +37,21 @@
                         @else
                         <em>No remark files yet.</em>
                         @endif
+
+                        @can('ror_supervision')
+
+                        <button class='edit-remark btn btn-xs btn-info' assignment_id="{{ $ror->fa_id }}">Add/Edit Remarks</button>
+
+                        @endcan
+                        <br><b>Remarks:</b>
+                        <div class='remarks' assignment_id='{{ $ror->fa_id }}'>
+                        
+                        @if(!($ror->remarks === null || $ror->remarks === ""))
+                            {!! preg_replace("#\n#","<br>",htmlspecialchars($ror->remarks)) !!}
+                            @else
+                            <em>none yet</em>
+                        @endif                            
+                        </div>
                     </td>
                     <td>
 
@@ -60,12 +75,27 @@
                         Add File As Remark <span class="caret"></span>
                       </button>
 
-                      <ul class="dropdown-menu" aria-labelledby="dropdownMenu{{ $ror->fa_id }}">
+                      <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenu{{ $ror->fa_id }}">
                         <li>Loading..</li>
                       </ul>
                     </div>
+
+                    @if(auth()->user()->role_id === 5)
                     
+                        @if($ror->status === "approval_check")
+                            <button class="btn btn-warning btn-xs" disabled assignment_id="{{ $ror->fa_id }}">Currently Pending Approval of Completion</button>
+
+                        @else
+
+                        <button class="btn btn-success btn-xs mark-as-complete" assignment_id="{{ $ror->fa_id }}">Mark Assignment as Complete</button>
+
+                        @endif
+
+                    @else
+
                     <button class="btn btn-success btn-xs mark-as-complete" assignment_id="{{ $ror->fa_id }}">Mark Assignment as Complete</button>
+
+                    @endif
 
                     @if($ror->status === "approval_check")
 
@@ -94,6 +124,31 @@
 
     <script type="text/javascript">
         $(document).ready(function(){
+
+            $("body").on("click",".edit-remark",function(event){
+                assignmentId = $(this).attr("assignment_id");
+                actualElem = $(this);
+                elemToModify = $(".remarks[assignment_id='"+assignmentId+"']");
+                $.post(siteUrl+"admin/edit_remark",{assignment_id: assignmentId, _token: window._token},function(results){
+                    console.log(results.contents);
+                    elemToModify.html("<textarea class='remark-editor form-control' assignment_id='"+ assignmentId+"'>"+results.contents.escape()+"</textarea>");
+                    actualElem.text("Finish Editing Remark").removeClass("edit-remark btn-info").addClass("finish-editing-remark btn-warning");
+                },"json");
+            });
+
+            $("body").on("click",".finish-editing-remark",function(event){
+                assignmentId = $(this).attr("assignment_id");
+                contents = $(".remark-editor[assignment_id='"+assignmentId+"']").val();
+                actualElem = $(this);
+                elemToModify = $(".remarks[assignment_id='"+assignmentId+"']");
+                $.post(siteUrl+"admin/finish_editing_remark",{assignment_id: assignmentId, contents: contents, _token: window._token},function(results){
+                    actualElem.text("Add/Edit Remarks").addClass("edit-remark btn-info").removeClass("finish-editing-remark btn-info");
+                    contents = contents.escape();
+                    elemToModify.html(contents.replace(/\n/gi,"<br>"));
+
+                },"json");
+            });
+
             $("body").on("click",".mark-as-complete,.reset-to-pending",function(event){
                 
                 event.preventDefault();

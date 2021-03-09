@@ -5,6 +5,19 @@
  * @param  {String} url The URL
  * @return {Object}     The URL parameters
  */
+
+ String.prototype.escape = function() {
+    var tagsToReplace = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;'
+    };
+    return this.replace(/[&<>]/g, function(tag) {
+        return tagsToReplace[tag] || tag;
+    });
+};
+
+	
 var getParams = function (url) {
 	var params = {};
 	var parser = document.createElement('a');

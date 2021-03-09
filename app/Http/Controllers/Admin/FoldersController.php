@@ -37,7 +37,7 @@ class FoldersController extends Controller
             }
         }
 
-        $default = auth()->user()->role_id === 1 ? 'all' : 'my';
+        $default = Gate::allows('file_manager') ? 'all' : 'my';
 
         $view = Input::get('filter') ? Input::get('filter') : $default;
 
@@ -73,7 +73,7 @@ class FoldersController extends Controller
             //either admin or matching email address for subfolder
             $splitter = explode("\\",$path);
             //first folder will ALWAYS be an email address
-            $roleCheck = auth()->user()->role_id <= 1;
+            $roleCheck = Gate::allows('file_manager');
             $returnVal['checks'] = [$splitter,auth()->user()->email];
             if($roleCheck || $splitter[0] === auth()->user()->email){
                 try {
@@ -102,7 +102,7 @@ class FoldersController extends Controller
         $returnVal = ['status' => false, 'data' => []];
         $pathSplit = explode("/",$path);
 
-        $hasPermissionToView = auth()->user()->role_id === 1 || $pathSplit[1] === auth()->user()->email;
+        $hasPermissionToView = Gate::allows('file_manager') || $pathSplit[1] === auth()->user()->email;
         if($hasPermissionToView){
            
             try {
@@ -142,7 +142,7 @@ class FoldersController extends Controller
             $directoryFull = $directoryName;
             $directoryName = explode("/",$directoryName);
             $directoryName = $directoryName[count($directoryName)-1];
-            if(($level === 2 && ((auth()->user()->role_id !== 1 && $directoryName === auth()->user()->email) || auth()->user()->role_id === 1)) || $level !== 2){
+            if(($level === 2 && ((!Gate::allows('file_manager') && $directoryName === auth()->user()->email) || Gate::allows('file_manager'))) || $level !== 2){
                 $returnVal[count($returnVal)] = ['folder_name' => $directoryName,'folder_id' => $this->returnThenAdd(), 'full_path'=> $directoryFull , 'subfolders' => $this->directoryScout($directoryFull,($level+1))];
             } 
                 
@@ -163,10 +163,9 @@ class FoldersController extends Controller
         if (! Gate::allows('folder_view')) {
             $returnValue['error'] = "You do not have sufficient permissions to view folders.";
         }else{
-            //get role ID
+
             $userData = auth()->user();
             $rootDirectory = "";
-            
 
             $currentDirectory = $rootDirectory . $request->directory;
 
@@ -301,7 +300,7 @@ class FoldersController extends Controller
             return abort(401);
         }
         
-        $default = auth()->user()->role_id === 1 ? 'all' : 'my';
+        $default = Gate::allows('file_manager') ? 'all' : 'my';
 
         $view = Input::get('filter') ? Input::get('filter') : $default;
         $email = auth()->user()->email;

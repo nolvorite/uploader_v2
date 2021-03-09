@@ -32,7 +32,7 @@
     <div class="panel panel-default">
 
     <div class="panel-heading">
-            Patients        </div>
+            Files        </div>
 
         <div class="panel-body table-responsive">
 

@@ -85,12 +85,29 @@ ul#listof_files {
 
 #full_path_display{text-decoration: underline}
 
+.remarks{width:300px;}
+
+.panel-body.table-responsive {
+    max-height: none;
+    overflow-x: unset;
+}
+
+ul.dropdown-menu {}
+
+ul.dropdown-menu.dropdown-menu-right {
+    max-height: 200px;
+    max-width:160px;
+    overflow-y: auto;
+}
+
+.remark-editor{min-height:140px;}
+
 </style>
 
 @if(Auth::check())
 
 <script type="text/javascript">
-    const isAnAdmin = {{ (auth()->user()->role_id === 1) ? 'true' : 'false' }};
+    const isAnAdmin = {{ (auth()->user()->role_id === 1 || auth()->user()->role_id === 3) ? 'true' : 'false' }};
     const rootFolder = "";
     const userEmail = "{{auth()->user()->email}}";
     const levelOfSubFolderCreation = 3;

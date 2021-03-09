@@ -56,7 +56,7 @@ class SpatieMediaController extends Controller
         $returnVal = ['error' => ''];        
         $isNewPatientEntry = $request->has('is_new_patient');        
 
-        if(auth()->user()->role_id === 1 || $comparison){
+        if(Gate::allows('file_manager') || $comparison){
 
             $uploadSucceededWithoutErrors = true;
 

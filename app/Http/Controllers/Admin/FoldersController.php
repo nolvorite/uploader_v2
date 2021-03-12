@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB as DB;
+use Illuminate\Support\Facades\File as FileManager; 
+
 
 
 class FoldersController extends Controller
@@ -294,7 +296,7 @@ class FoldersController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id, Request $request)
+    public function show($id,Request $request)
     {
         if (! Gate::allows('folder_view')) {
             return abort(401);
@@ -400,8 +402,44 @@ class FoldersController extends Controller
         if (! Gate::allows('folder_delete')) {
             return abort(401);
         }
-        $folder = Folder::onlyTrashed()->findOrFail($id);
-        $folder->forceDelete();
+
+        $permissionChecks = [
+            'is_creator_of_files' => count(DB::table('folders')->where(['created_by_id' => auth()->user()->id, 'id' => $id])->get()) > 0,
+            'can_edit_others_files' => Gate::allows('can_delete_others_files')
+        ];
+
+        if($permissionChecks['is_creator_of_files'] || $permissionChecks['can_edit_others_files']){
+            $folder = Folder::onlyTrashed()->findOrFail($id);
+
+            $folderData = $folder;
+
+            $userData = DB::table('users')->where('id',$folderData->created_by_id)->get()[0];
+
+            $fullCompilation = $this->fileTable()->whereRaw('path LIKE "'.$userData->email.'/'. $folderData->name.'%"');
+
+            $fullCompilationRaw = $fullCompilation->get();
+
+            $fileNameCompilation = [];
+
+            $idCompilation = [];
+
+            foreach($fullCompilationRaw as $files){
+                //$fileNameCompilation[] = storage_path("app\\public\\".preg_replace("#/#","\\",$files->path)."\\".$files->file_name);
+                $idCompilation[] = $files->id;
+            }
+
+            //mass deletions
+
+
+            FileManager::deleteDirectory(storage_path("app\\public\\".$userData->email.'\\'. $folderData->name));
+
+            DB::table('files')->whereIn('id',$idCompilation)->delete();
+
+            DB::table('media')->whereIn('id',$idCompilation)->delete();
+
+            $folder->forceDelete();
+
+        }
 
         return redirect()->route('admin.folders.index');
     }

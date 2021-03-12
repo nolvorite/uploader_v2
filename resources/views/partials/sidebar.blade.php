@@ -7,7 +7,7 @@
 
              
 
-            <li class="{{ $request->segment(1) == 'home' ? 'active' : '' }}">
+            <li class="{{ $request->segment(2) == 'home' ? 'active' : '' }}">
                 <a href="{{ url('/') }}">
                     <i class="fa fa-wrench"></i>
                     <span class="title">@lang('quickadmin.qa_dashboard')</span>
@@ -67,7 +67,7 @@
             </li>
             @endcan
 
-            @can('file_access')
+            @can('patient_access')
             <li class="{{ $request->segment(2) == 'patients' && !preg_match("#create(\/)?$#",$request->getPathInfo()) ? 'active' : '' }}">
                 <a href="{{ url('admin/patients') }}">
                     <i class="fa fa-list-alt" aria-hidden="true"></i>

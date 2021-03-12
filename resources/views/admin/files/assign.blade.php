@@ -27,8 +27,7 @@
             <table class="table table-bordered table-striped" id="list_of_assignments">
         		<thead>
         			<tr>
-                    <th>Patient
-                    </th>
+
         			<th>File Name
         			</th>
         			<th>Due Date</th>
@@ -96,7 +95,7 @@
                         compiledData = [];
                         for(i in results.data){
                             dt = results.data[i];
-                            text = dt.file_name +" ("+dt.pfn+" "+dt.pln+" - "+dt.assignees+" assigned)";
+                            text = dt.file_name +" ("+dt.assignees+" assigned)";
                             id = dt.id;
                             compiledData[compiledData.length] = {text: text, id: id};
                         }
@@ -155,9 +154,10 @@
                         dt = results.data[i];
                         dt.url = siteUrl+"storage/"+ dt.folder_creator +"/"+ dt.folder_name +"/"+ dt.relative_path +"/"+ dt.file_name ;
 
+                        dt.remarks = dt.remarks.length > 0 ? dt.remarks.replace(/\n/gi,"<br>") : "<em>You put no remarks yet.</em>";
+
                         template = 
                         "<tr>\
-                             <td>"+dt.pfn+" "+dt.pln+"</td>\
                             <td><a href='"+dt.url+"' target='_blank'>"+ dt.file_name +"</a></td>\
                             <td>"+dt.deadline+"</td>\
                             <td>"+dt.remarks+"</td>\

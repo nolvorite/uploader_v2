@@ -65,8 +65,9 @@
 
                             <td field-key='name'>
                                 @can('folder_view')
-                                    <a href="{{ route('admin.folders.show',[$folder->id]) }}">{{$folder->name}}</a></td>
-                            @endcan
+                                    <a href="{{ route('admin.folders.show',[$folder->id]) }}/?currentBasePath={{ urlencode($folder->name) }}">{{$folder->name}}</a>
+                                @endcan
+                            </td>
 
                             @if( $view === "all" && Auth::getUser()->role_id === 1 )
                             <td>{{ $folder->email }}</td>

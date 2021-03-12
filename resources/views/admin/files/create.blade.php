@@ -110,6 +110,7 @@
             });
 
             fileIds = []; 
+            dataFromDrops = [];
 
             var exfiles = '<?php echo $userFilesCount; ?>';
             var existingFiles = Number(exfiles);
@@ -117,6 +118,8 @@
             if(typeof loadedFolderId !== "undefined"){
                 
                 $("#folder_id").select2().val(loadedFolderId).trigger("change.select2");
+
+                $("#files_view").removeClass("hide");
 
             }
 

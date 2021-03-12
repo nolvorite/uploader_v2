@@ -11,6 +11,7 @@ use App\Http\Requests\Admin\StoreFilesRequest;
 use App\Http\Requests\Admin\UpdateFilesRequest;
 use App\Http\Controllers\Traits\FileUploadTrait;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\File as FileManager; 
 
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Input;
@@ -58,7 +59,9 @@ class FilesController extends Controller
                 //
             break;
             case "my":
-                $selector = $selector->where('f.created_by_id',auth()->user()->id)->orWhere("f.path","LIKE",$email."%");
+                $selector = $selector->where(function($query){
+                    $query->where('f.created_by_id',auth()->user()->id)->orWhere("f.path","LIKE",auth()->user()->email."%");
+                }); 
             break;
         }
 
@@ -66,7 +69,11 @@ class FilesController extends Controller
             if (!Gate::allows('file_delete')) {
                 return abort(401);
             }
-            $files = $selector->whereNotNull("deleted_at");
+            $files = $selector->whereNotNull("f.deleted_at");
+        }else{
+            $files = $selector->where(function($query){
+                $query->whereNull("f.deleted_at");
+            });
         } 
 
         DB::connection()->enableQueryLog();
@@ -234,20 +241,11 @@ class FilesController extends Controller
             session(['user_id_temp' => $queryCheck]);
         }
 
-        $additionalColumns = $queryCheck !== null && !$excludeCheck ?
-
-        ",patient_entries.first_name as pfn, patient_entries.last_name as pln, file_assignments.deadline, file_assignments.remarks, (SELECT COUNT(*) FROM file_assignments WHERE file_assignments.file_id = f.id) as assignees, file_assignments.id as fa_id"
-
-        :
-
-        ",patient_entries.first_name as pfn, patient_entries.last_name as pln, (SELECT COUNT(*) FROM file_assignments WHERE file_assignments.file_id = f.id) as assignees";
+        $additionalColumns = ", (SELECT COUNT(*) FROM file_assignments WHERE file_assignments.file_id = f.id) as assignees, file_assignments.deadline, file_assignments.remarks";
 
         $data = ['action' => 'listOfUnassignedFilesROR'];
 
-        $dataFetcher = $this
-
-            ->fileTable($additionalColumns)
-            ->join("patient_entries","patient_entries.patient_id","=","f.patient_id");
+        $dataFetcher = $this->fileTable($additionalColumns);
 
         if($queryCheck !== null && !$excludeCheck){
 
@@ -260,6 +258,7 @@ class FilesController extends Controller
             if(!$excludeCheck){
                 //
             }else{
+                //filter out already assigned files
                 $dataFetcher = $dataFetcher->where(function($query){
                     $query->whereNotIn("file_assignments.user_id",[session('user_id_temp')])->orWhereNull("file_assignments.user_id");
                 });
@@ -268,6 +267,12 @@ class FilesController extends Controller
             }
            
         }
+
+        $dataFetcher = $dataFetcher->where(function($query){
+            $query->where("f.created_by_id",auth()->user()->id);
+        });
+
+        //as it turns out, you can only assign files made by the user itself sooo...
 
         $data['data'] = $dataFetcher
 
@@ -409,7 +414,7 @@ class FilesController extends Controller
     }
 
     public function markAsComplete(Request $request){
-        if(!Gate::allows('ror_supervision')){
+        if(!Gate::allows('ror_maintenance')){
             return abort(401);
         }
         $data = ['status' => false, 'message' => ''];
@@ -470,9 +475,9 @@ class FilesController extends Controller
 
     public function listFilesROR(Request $request){
         if(auth()->user()->role_id === 5){
-            $rorList = $this->patientAssignments(auth()->user()->id,$request->has('show_completed'));
+            $rorList = $this->rorAssignments(auth()->user()->id,$request->has('show_completed'));
         }else if(preg_match("#^1|4$#",auth()->user()->role_id)){
-            $rorList = $this->patientAssignments(null,$request->has('show_completed'));
+            $rorList = $this->rorAssignments(null,$request->has('show_completed'));
         }
 
         $rorList = $rorList->join("patient_entries","patient_entries.patient_id","=","f.patient_id")->get();
@@ -672,8 +677,20 @@ class FilesController extends Controller
         if (!Gate::allows('file_delete')) {
             return abort(401);
         }
-        $file = File::onlyTrashed()->findOrFail($id);
-        $file->forceDelete();
+
+        $permissionChecks = [
+            'is_creator_of_files' => count(DB::table('folders')->where(['created_by_id' => auth()->user()->id, 'id' => $id])->get()) > 0,
+            'can_edit_others_files' => Gate::allows('can_delete_others_files')
+        ];
+
+        if($permissionChecks['is_creator_of_files'] || $permissionChecks['can_edit_others_files']){
+            $file = File::onlyTrashed()->withMedia()->findOrFail($id);
+
+            FileManager::delete(storage_path("app\public\\".$file->first()->path."\\".$file->first()->get()->file_name));
+
+            $file->forceDelete();
+
+        }        
 
         return redirect()->route('admin.files.index');
     }

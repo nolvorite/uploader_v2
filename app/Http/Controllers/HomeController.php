@@ -22,8 +22,16 @@ class HomeController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return view('home');
+        if(auth()->user()->role_id === 5){
+            return redirect("/admin/list_of_files_ror");
+        }
+
+        else{
+            return view('home');
+        }
+
+        
     }
 }

@@ -29,7 +29,7 @@ class Controller extends BaseController
     	return $num;
     }
 
-    public function patientAssignments($userId = null, $showCompleted = false){
+    public function rorAssignments($userId = null, $showCompleted = false){
 
         $fileTableSample =  $this
 
@@ -48,8 +48,7 @@ class Controller extends BaseController
             folders2.name as folder_name2,
             media2.file_name as file_name2,
             f2.relative_path as relative_path2
-
-
+            
             ")
 
 

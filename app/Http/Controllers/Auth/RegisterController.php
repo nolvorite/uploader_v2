@@ -64,6 +64,8 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
+        mkdir(storage_path("app\public\\".$data['email']."\\"), 0775);
+
         return User::create([
             'name' => $data['first_name'] . " " . $data['last_name'],
             'first_name' => $data['first_name'],
@@ -72,5 +74,9 @@ class RegisterController extends Controller
             'password' => bcrypt($data['password']),
             'role_id' => config('quickadmin.default_role_id')
         ]);
+
+        
+
+
     }
 }

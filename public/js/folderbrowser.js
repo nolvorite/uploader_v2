@@ -48,13 +48,17 @@ function clickToPath(currentBasePath){
 	manualTrigger = false;
 }
 
-function addNewFolder(fullPath,name){
+function addNewFolder(fullPath,name,rootFolderAccessForAdmins = false){
+
+	fullPath = rootFolderAccessForAdmins ? "" : fullPath;
 
 	$.post(siteUrl+"admin/add_subfolder",{_token:window._token,name: name,path: fullPath},function(results){
+
 		console.log(results);
 		reset();
-		
+
 	});
+
 }
 
 function displayWhenUploadFinishes2(e, data) {
@@ -226,9 +230,15 @@ function setCurrentDirectoryDisplay(display = "initial",currentArray = [],parent
 		if(level >= levelOfSubFolderCreation){
 			dropdownLinks.find('a').addClass("goto-tab").attr("href","-3").removeAttr("folder_name").html('<strong>Add New Folder</strong>');
 			segment.find(".dropdown-menu").append("<li>"+dropdownLinks.html()+"</li>");
+		}else if(isAnAdmin){
+			if(level < levelOfSubFolderCreation){
+				dropdownLinks.find('a').addClass("goto-tab").attr("href","-4").removeAttr("folder_name").html('<strong>Add New Folder</strong>');
+				segment.find(".dropdown-menu").append("<li>"+dropdownLinks.html()+"</li>");
+			}
 		}
 		if(display === "initial"){
 			dropdownLinks.attr('goto-tab','-1');
+
 			dropdownLinks.find('a').addClass("goto-tab").attr("href","-2").removeAttr("folder_name").html('<strong>Root Folder</strong>');
 
 			segment.find(".dropdown-menu").append("<li>"+dropdownLinks.html()+"</li>");
@@ -312,6 +322,11 @@ $("body").on("click",".goto-tab",function(event){
 		newFolderName = prompt("Type the name of your new folder");
 		if(typeof newFolderName === "string"){
 			addNewFolder(fullPath,newFolderName);
+		}
+	}else if(folderId === "-4"){
+		newFolderName = prompt("Type the name of your new folder");
+		if(typeof newFolderName === "string"){
+			addNewFolder('',newFolderName, true);
 		}
 	}
 

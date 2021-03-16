@@ -228,9 +228,11 @@ class FilesController extends Controller
     }
 
     public function listOfUnassignedFilesROR(Request $request){
+        
         if(!Gate::allows('ror_supervision')){
             return abort(401);
         }
+
         DB::enableQueryLog();
 
         $excludeCheck = Input::post('exclude') !== null;
@@ -241,7 +243,7 @@ class FilesController extends Controller
             session(['user_id_temp' => $queryCheck]);
         }
 
-        $additionalColumns = ", (SELECT COUNT(*) FROM file_assignments WHERE file_assignments.file_id = f.id) as assignees, file_assignments.deadline, file_assignments.remarks";
+        $additionalColumns = ", (SELECT COUNT(*) FROM file_assignments WHERE file_assignments.file_id = f.id) as assignees, file_assignments.deadline, file_assignments.remarks,file_assignments.id as fa_id";
 
         $data = ['action' => 'listOfUnassignedFilesROR'];
 

@@ -75,7 +75,9 @@ class FoldersController extends Controller
             //either admin or matching email address for subfolder
             $splitter = explode("\\",$path);
             //first folder will ALWAYS be an email address
+
             $roleCheck = Gate::allows('file_manager');
+
             $returnVal['checks'] = [$splitter,auth()->user()->email];
             if($roleCheck || $splitter[0] === auth()->user()->email){
                 try {
@@ -196,10 +198,14 @@ class FoldersController extends Controller
         if (! Gate::allows('folder_create')) {
             return abort(401);
         }
+
+        $isFileManager = Gate::allows('file_manager');
         
         $created_bies = \App\User::get()->pluck('name', 'id')->prepend(trans('quickadmin.qa_please_select'), '');
 
-        return view('admin.folders.create', compact('created_bies'));
+        $textForDirectoryBrowser = "Select Folder...";
+
+        return view('admin.folders.create', compact('created_bies', 'isFileManager', 'textForDirectoryBrowser'));
     }
 
     /**
@@ -216,10 +222,9 @@ class FoldersController extends Controller
 
         $requestD = $request->all();
 
-        $email = auth()->user()->email;
 
-        $uploadPath = storage_path("app\public\\".$email."\\".$requestD['name']);
-        $uploadPath2 = storage_path("app\public\\".$email."\\");
+        $uploadPath = storage_path("app\public\\".$requestD['full_path']."\\".$requestD['name']);
+        $uploadPath2 = storage_path("app\public\\".$requestD['full_path']."\\");
 
         if(file_exists($uploadPath)){
             throw ValidationException::withMessages(['field_name' => 'Directory already exists. Please select another name.']);
@@ -228,9 +233,23 @@ class FoldersController extends Controller
             $counter = 0;
             while($counter < 3 && !$isCreated){
                 try {
-                    mkdir($uploadPath, 0775);
-                    $folder = Folder::create($requestD);
-                    $isCreated = true;
+                    if(Gate::allows('file_manager') || preg_match("#^".auth()->user()->email."#",$requestD['full_path'])){
+                        //mkdir($uploadPath, 0775);
+
+                        if(!preg_match("#^".auth()->user()->email."#",$requestD['full_path'])){
+                            $emailOfRoot = preg_replace("#^(.+)\/#","$1",$requestD['full_path']);
+                            $newCreatedById = DB::table('users')->where("email",$emailOfRoot)->get()[0]->id;
+                            $requestD['created_by_id'] = $newCreatedById;
+                        }
+
+                        $folder = DB::table('folders')->insert([
+                            'name' => $requestD['name'],
+                            'created_by_id' => isset($requestD['created_by_id']) ? $requestD['created_by_id'] : auth()->user()->id
+                        ]);
+
+                        $isCreated = true;
+                    }
+                    
                 }
                 catch (\Exception $e){
 

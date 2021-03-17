@@ -523,7 +523,6 @@ class FilesController extends Controller
         
         // $request = $this->saveFiles($request);
 
-        // $data = $request->all();
         // $fileIds = $request->input('filename_id');
 
         // foreach ($fileIds as $fileId) {

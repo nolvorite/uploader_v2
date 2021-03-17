@@ -7,7 +7,13 @@
         @break;
     @endswitch   
     @else
-    <h4 class="page-title">Directory Browser</h4>
+    <h4 class="page-title">
+        @if(isset($textForDirectoryBrowser))
+            {{ $textForDirectoryBrowser }}
+        @else
+            Directory Browser
+        @endif
+    </h4>
     @endif
 
     <div class="btn-group" role="group" id="directory_dropdown"> 

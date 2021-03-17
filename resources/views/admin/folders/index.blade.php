@@ -42,7 +42,7 @@
                     @endcan
 
                     <th>@lang('quickadmin.folders.fields.name')</th>
-                    @if( $view === "all" && Auth::getUser()->role_id === 1 )
+                    @if( $view === "all" && Gate::allows('file_manager') )
                     <th>Creator</th>
                     @endif 
 
@@ -69,7 +69,7 @@
                                 @endcan
                             </td>
 
-                            @if( $view === "all" && Auth::getUser()->role_id === 1 )
+                            @if( $view === "all" && Gate::allows('file_manager') )
                             <td>{{ $folder->email }}</td>
                             @endif 
 

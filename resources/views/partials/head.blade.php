@@ -107,10 +107,12 @@ ul.dropdown-menu.dropdown-menu-right {
 @if(Auth::check())
 
 <script type="text/javascript">
-    const isAnAdmin = {{ (auth()->user()->role_id === 1 || auth()->user()->role_id === 3) ? 'true' : 'false' }};
+    const isAnAdmin = {{ (auth()->user()->role_id === 1) ? 'true' : 'false' }};
+    const isFileManager = {{ (auth()->user()->role_id === 1 || auth()->user()->role_id === 5) ? 'true' : 'false' }};
     const rootFolder = "";
     const userEmail = "{{auth()->user()->email}}";
     const levelOfSubFolderCreation = 3;
+    const isInFileManagerPage = {{ (Request::segment(2) === "file_manager") ? 'true' : 'false' }};
 </script>
 
 @endif

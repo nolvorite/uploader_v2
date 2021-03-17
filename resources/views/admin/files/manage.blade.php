@@ -85,7 +85,7 @@
     <script src="{{ asset('quickadmin/plugins/fileUpload/js/jquery.fileupload.js') }}"></script>
     <script>
 
-        isFileManager = true;
+        isFileManagerPage = true;
 
         $("#drag_drop_box").addClass("dropzone").dropzone({
             url: siteUrl+"admin/spatie/media/upload", 

@@ -21,6 +21,12 @@
                         </p>
                     @endif
                 </div>
+                @if($isFileManager)
+                <div class="col-xs-12 form-group">
+                    <input type="hidden" name="full_path">
+                    @include('partials.directorybrowser')
+                </div>
+                @endif
             </div>
             
         </div>
@@ -29,4 +35,8 @@
     {!! Form::submit(trans('quickadmin.qa_save'), ['class' => 'btn btn-danger']) !!}
     {!! Form::close() !!}
 @stop
-
+@section('javascript')
+    <script type="text/javascript">
+        inFolderPage = true;
+    </script>
+@stop

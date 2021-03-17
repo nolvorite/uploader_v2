@@ -7,15 +7,17 @@
  */
 
  String.prototype.escape = function() {
-    var tagsToReplace = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;'
-    };
-    return this.replace(/[&<>]/g, function(tag) {
-        return tagsToReplace[tag] || tag;
-    });
+	var tagsToReplace = {
+		'&': '&amp;',
+		'<': '&lt;',
+		'>': '&gt;'
+	};
+	return this.replace(/[&<>]/g, function(tag) {
+		return tagsToReplace[tag] || tag;
+	});
 };
+
+
 
 	
 var getParams = function (url) {
@@ -31,8 +33,12 @@ var getParams = function (url) {
 	return params;
 };
 
-var isFileManagerPage = function(){
-	return typeof isFileManager !== "undefined";
+var isFileManagerPageCheck = function(){
+	return typeof isFileManager !== "undefined" && isInFileManagerPage;
+}
+
+var isCreatingFolder = function(){
+	return typeof inFolderPage !== "undefined";
 }
 
 function clickToPath(currentBasePath){
@@ -77,18 +83,18 @@ function displayWhenUploadFinishes(e, data) {
 
 	counter++;
 	if(counter === data.result.files.length){
-	    alert("All files have finished uploading!");
+		alert("All files have finished uploading!");
 	}
 	$.each(data.result.files, function (index, file) {
-	    var $line = $($('<p/>', {class: "form-group"}).html(file.name + ' (' + file.size + ' bytes)').appendTo($parent.find('.files-list')));
-	    if ($parent.find('.' + $this.data('bucket') + '-ids').val() != '') {
-	        $parent.find('.' + $this.data('bucket') + '-ids').val($parent.find('.' + $this.data('bucket') + '-ids').val() + ',');
-	    }
-	    $parent.find('.' + $this.data('bucket') + '-ids').val($parent.find('.' + $this.data('bucket') + '-ids').val() + file.id);
+		var $line = $($('<p/>', {class: "form-group"}).html(file.name + ' (' + file.size + ' bytes)').appendTo($parent.find('.files-list')));
+		if ($parent.find('.' + $this.data('bucket') + '-ids').val() != '') {
+			$parent.find('.' + $this.data('bucket') + '-ids').val($parent.find('.' + $this.data('bucket') + '-ids').val() + ',');
+		}
+		$parent.find('.' + $this.data('bucket') + '-ids').val($parent.find('.' + $this.data('bucket') + '-ids').val() + file.id);
 	});
 	$parent.find('.progress-bar').hide().css(
-	    'width',
-	    '0%'
+		'width',
+		'0%'
 	);
 	getListOfFiles(fullPath);
 }
@@ -97,10 +103,14 @@ function getListOfFiles(fullPath,triggerListOfFiles = false){
 	$.post(siteUrl+"admin/basic_list",{_token:window._token,path: fullPath},function(results){
 		$("#listof_files").html('');
 
-		if(isFileManagerPage()){
+		if(isFileManagerPageCheck()){
 			$("#misc_options").removeClass('hide');
-
 		}
+
+		if(isCreatingFolder()){
+			$("[name=full_path]").val(fullPath);
+		}
+
 
 		for(index in results.data.directories){
 			name = results.data.directories[index].replace(results.fullPath,"");
@@ -109,7 +119,7 @@ function getListOfFiles(fullPath,triggerListOfFiles = false){
 		for(index in results.data.files){
 			name = results.data.files[index].replace(results.fullPath,"");
 
-			downloadLink = isFileManagerPage() ? " <a target='_blank' class='btn btn-primary btn-xs download-link' href='"+siteUrl+"admin/get_as_downloadable?link="+encodeURI(results.link)+"/"+encodeURI(name)+"'>Download</a>" : "";
+			downloadLink = isFileManagerPageCheck() ? " <a target='_blank' class='btn btn-primary btn-xs download-link' href='"+siteUrl+"admin/get_as_downloadable?link="+encodeURI(results.link)+"/"+encodeURI(name)+"'>Download</a>" : "";
 
 			$("#listof_files").append("<li><i class=\"fa fa-file-excel-o\" aria-hidden=\"true\"></i>&nbsp;<a target='_blank' href='"+siteUrl+encodeURI(results.link)+"/"+encodeURI(name)+"'>"+name+"</a> "+downloadLink+"</li>");
 		}
@@ -160,8 +170,8 @@ function directoryScout(directory = ""){
 
 		if(typeof loadedFolderId === "number"){
 			folderPath = $("#folder_id option[value="+loadedFolderId+"]").text();
-            fullPath = folderPath;
-            $("#subfolder_view").removeClass("hide");
+			fullPath = folderPath;
+			$("#subfolder_view").removeClass("hide");
 			clickToPath(folderPath);
 		}
 
@@ -194,8 +204,6 @@ function setCurrentDirectoryDisplay(display = "initial",currentArray = [],parent
 
 		folderName = (parentId === -1) ? "Root Directory" : dt.folder_name;
 
-		console.log(folderName,)
-
 		segment.find(".folder_name").text(folderName);
 		segment.attr("folder_name",folderName);
 
@@ -227,13 +235,16 @@ function setCurrentDirectoryDisplay(display = "initial",currentArray = [],parent
 
 			segment.find(".dropdown-menu").append("<li>"+dropdownLinks.html()+"</li>");
 		}
-		if(level >= levelOfSubFolderCreation){
+
+		if(level >= levelOfSubFolderCreation && !isCreatingFolder()){
+
 			dropdownLinks.find('a').addClass("goto-tab").attr("href","-3").removeAttr("folder_name").html('<strong>Add New Folder</strong>');
 			segment.find(".dropdown-menu").append("<li>"+dropdownLinks.html()+"</li>");
-		}else if(isAnAdmin){
-			if(level < levelOfSubFolderCreation){
-				dropdownLinks.find('a').addClass("goto-tab").attr("href","-4").removeAttr("folder_name").html('<strong>Add New Folder</strong>');
-				segment.find(".dropdown-menu").append("<li>"+dropdownLinks.html()+"</li>");
+
+		}else{
+			if(level ===2){
+				segment.find(".dropdown-menu,.caret").detach();
+				segment.find(".dropdown-toggle").removeClass("dropdown-toggle");
 			}
 		}
 		if(display === "initial"){
@@ -244,9 +255,9 @@ function setCurrentDirectoryDisplay(display = "initial",currentArray = [],parent
 			segment.find(".dropdown-menu").append("<li>"+dropdownLinks.html()+"</li>");
 		}
 
-
-
 		segment.appendTo("#directory_dropdown");
+
+
 		if(dt.subfolders.length > 0){
 			crnt = dt.subfolders;
 			setCurrentDirectoryDisplay("subfolder",crnt,dt.folder_id,level+1);
@@ -295,12 +306,13 @@ function loadZipCompilations(){
 
 $("body").on("click",".goto-tab",function(event){
 	event.preventDefault();
-	if(!isCreatingFiles && !manualTrigger){
+	if((!isCreatingFiles && !manualTrigger) && !isCreatingFolder()){
 		$("#goto_folder").removeClass('hide');
 	}
 	folderId = $(this).attr("href");
 	console.log(parseInt(folderId));
 	if(parseInt(folderId) > -3){
+
 		$(this).parents(".dropdown-segment").removeClass('rightclip').nextAll().addClass('hide').removeClass('rightclip');
 		for(i in DIRECTORY_LIST_INLINE){
 			dt = DIRECTORY_LIST_INLINE[i];
@@ -309,8 +321,10 @@ $("body").on("click",".goto-tab",function(event){
 				fullPath = fullPath.replace(/^public\//,"");
 
 				getListOfFiles(fullPath);
+
 				
 				$("#directory_dropdown .dropdown-segment[folder_id="+folderId+"]").insertAfter("#directory_dropdown .dropdown-segment[folder_id="+dt.parentId+"]").addClass("rightclip").removeClass('hide');
+
 			}
 		}
 		if(folderId === "-2"){
@@ -343,14 +357,14 @@ $("body").on("click","#goto_folder",function(){
 fullPath = "";
 
 $(document).ready(function(){
-	if(isFileManagerPage()){
+	if(isFileManagerPageCheck()){
 
 	$("body").on("click","#generate_download_link",function(event){
 		event.preventDefault();
 		$.post(siteUrl+"admin/generate_download_link",{_token:window._token},function(results){
 			if(results.status){
 				//getListOfFiles(fullPath,true);
-				if(isFileManagerPage()){
+				if(isFileManagerPageCheck()){
 					loadZipCompilations();
 				}
 			}else{

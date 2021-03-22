@@ -34,9 +34,6 @@ class Controller extends BaseController
         $fileTableSample =  $this
 
         ->fileTable(",
-
-            patient_entries.first_name as pfn, 
-            patient_entries.last_name as pln, 
             file_assignments.deadline, 
             file_assignments.remarks, 
             (SELECT email FROM users WHERE users.id = file_assignments.user_id) as assigned_to, 

@@ -28,6 +28,7 @@ class FoldersController extends Controller
      */
     public function index()
     {
+        DB::enableQueryLog();
         if (! Gate::allows('folder_access')) {
             return abort(401);
         }
@@ -39,18 +40,47 @@ class FoldersController extends Controller
             }
         }
 
-        $default = Gate::allows('file_manager') ? 'all' : 'my';
+        switch(auth()->user()->role_id."-"){
+            case "1-":
+            case "3-":
+                $default = "all";
+            break;
+            case "2-":
+            case "5-":
+                $default = "my";
+            break;
+            case "4-":
+                $default = "ror";
+            break;
+        }
 
-        $view = Input::get('filter') ? Input::get('filter') : $default;
+        $view = $default;
 
         if (request('show_deleted') == 1) {
             if (! Gate::allows('folder_delete')) {
                 return abort(401);
             }
-            $folders = Folder::select('folders.name', 'users.name as users_name','folders.id as id','users.id as user_id','created_by_id','email')->join("users","users.id","=","created_by_id")->onlyTrashed()->get();
+            $folders = Folder::select('folders.name', 'users.name as users_name','folders.id as id','users.id as user_id','created_by_id','email')->join("users","users.id","=","created_by_id")->onlyTrashed();
         } else {
-            $folders = Folder::select('folders.name', 'users.name as users_name','folders.id as id','users.id as user_id','created_by_id','email')->join("users","users.id","=","created_by_id")->get();
+            $folders = Folder::select('folders.name', 'users.name as users_name','folders.id as id','users.id as user_id','created_by_id','email')->join("users","users.id","=","created_by_id");
         }
+
+        switch($default){
+            case "all":
+                //nothing
+            break;
+            case "my":
+                $folders = $folders->where("created_by_id",auth()->user()->id);
+            break;
+            case "ror":
+                $folders = $folders->where(function($query){
+                    $query->whereIn("users.role_id",[4,5]);
+                });
+                
+            break;
+        }
+
+        $folders = $folders->get();
 
         return view('admin.folders.index', compact('folders','view'));
     }

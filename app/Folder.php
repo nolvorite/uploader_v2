@@ -14,7 +14,7 @@ use App\Traits\FilterByUser;
 */
 class Folder extends Model
 {
-    use SoftDeletes, FilterByUser;
+    use SoftDeletes;
 
     protected $fillable = ['name', 'created_by_id'];
     

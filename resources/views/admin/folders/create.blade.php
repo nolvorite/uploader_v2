@@ -21,12 +21,12 @@
                         </p>
                     @endif
                 </div>
-                @if($isFileManager)
+
                 <div class="col-xs-12 form-group">
                     <input type="hidden" name="full_path">
                     @include('partials.directorybrowser')
                 </div>
-                @endif
+
             </div>
             
         </div>

@@ -43,7 +43,20 @@ class FilesController extends Controller
             }
         }
 
-        $default = Gate::allows('file_manager') ? 'all' : 'my';
+        switch(auth()->user()->role_id."-"){
+            case "1-":
+            case "3-":
+                $default = "all";
+            break;
+            case "2-":
+            case "5-":
+                $default = "my";
+            break;
+            case "4-":
+                $default = "ror";
+            break;
+        }
+
         $email = auth()->user()->email;
 
         $view = $default;
@@ -62,6 +75,11 @@ class FilesController extends Controller
                 $selector = $selector->where(function($query){
                     $query->where('f.created_by_id',auth()->user()->id)->orWhere("f.path","LIKE",auth()->user()->email."%");
                 }); 
+            break;
+            case "ror":
+                $selector = $selector->where(function($query){
+                    $query->whereIn("users.role_id",[4,5]);
+                });
             break;
         }
 
@@ -482,7 +500,7 @@ class FilesController extends Controller
             $rorList = $this->rorAssignments(null,$request->has('show_completed'));
         }
 
-        $rorList = $rorList->join("patient_entries","patient_entries.patient_id","=","f.patient_id")->get();
+        $rorList = $rorList->get();
         
         return view('admin.files.ror', compact('rorList'));
     }

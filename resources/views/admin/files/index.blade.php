@@ -46,7 +46,7 @@
 
                     <th>Filename</th>
                     <th>Main Folder</th>
-                    @if( $view === "all" && Auth::getUser()->role_id === 1 )
+                    @if( $view === "all" || $view === "ror" )
                     <th>Creator</th>
                     @endif 
                     <th>&nbsp;</th>
@@ -72,7 +72,7 @@
                                 </td>
                             <td field-key='folder'><a href="{{url('admin/files?currentBasePath='.$file->folder_creator.'/'.$file->folder_name)}}">{{ $file->folder_name }}</a></td>
 
-                            @if( $view === "all" && Auth::getUser()->role_id === 1 )
+                            @if( $view === "all" || $view === "ror" )
                             <td field-key='email'>{{ $file->email or '' }}</td>
                             @endif 
 

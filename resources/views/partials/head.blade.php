@@ -102,6 +102,11 @@ ul.dropdown-menu.dropdown-menu-right {
 
 .remark-editor{min-height:140px;}
 
+.file_info{    max-width: 200px;
+    display: block;
+    word-wrap: break-word;
+}
+
 </style>
 
 @if(Auth::check())

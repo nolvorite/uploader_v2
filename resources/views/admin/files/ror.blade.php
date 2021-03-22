@@ -29,7 +29,7 @@
                 <tr assignment_id="{{ $ror->id }}">
                     <td>{{ $ror->email }}</td>
                     <td>{{ $ror->assigned_to }}</td>
-                    <td> <a href="{{url('/storage/' . $ror->folder_creator . '/'. $ror->folder_name .'/' . $ror->relative_path .'/'. $ror->file_name )}}" target="_blank">{{ $ror->file_name }}</a></td>
+                    <td><div class='file_info'><a href="{{url('/storage/' . $ror->folder_creator . '/'. $ror->folder_name .'/' . $ror->relative_path .'/'. $ror->file_name )}}" target="_blank">{{ $ror->file_name }}</a></div></td>
                     <td>{{ $ror->deadline }}</td>
                     <td>
                         @if($ror->file_name2 !== null)
@@ -54,7 +54,7 @@
                         </div>
                     </td>
                     <td>
-
+      
                     <div class="dropdown" assignment_id="{{ $ror->fa_id }}">
                         <?php
                             switch($ror->status){
@@ -105,6 +105,8 @@
                     @endcan
 
                     @endif
+
+      
 
 
 

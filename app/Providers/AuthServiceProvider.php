@@ -96,16 +96,16 @@ class AuthServiceProvider extends ServiceProvider
             return in_array($user->role_id, [1, 2, 3, 4, 5]);
         });
         Gate::define('file_create', function ($user) {
-            return in_array($user->role_id, [1, 3, 4, 5]); 
+            return in_array($user->role_id, [1, 2, 3, 4, 5]); 
         });
         Gate::define('file_edit', function ($user) {
-            return in_array($user->role_id, [1, 3, 4, 5]);
+            return in_array($user->role_id, [1, 2, 3, 4, 5]);
         });
         Gate::define('file_view', function ($user) {
             return in_array($user->role_id, [1, 2, 3, 4, 5]);
         });
         Gate::define('file_delete', function ($user) {
-            return in_array($user->role_id, [1, 3, 4, 5]);
+            return in_array($user->role_id, [1, 2, 3, 4, 5]);
         });
 
         Gate::define('ror_supervision', function ($user) {
@@ -117,11 +117,15 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         Gate::define('file_manager', function ($user) {
-            return in_array($user->role_id, [1, 3]);
+            return in_array($user->role_id, [1, 2,3]);
         });
 
 
         Gate::define('patient_access', function ($user) {
+            return in_array($user->role_id, [1,2]);
+        });
+
+        Gate::define('new_patient', function ($user) {
             return in_array($user->role_id, [1]);
         });
 

@@ -107,6 +107,8 @@ ul.dropdown-menu.dropdown-menu-right {
     word-wrap: break-word;
 }
 
+.deadline{min-width:130px;width:130px;display:inline-block;}
+
 </style>
 
 @if(Auth::check())

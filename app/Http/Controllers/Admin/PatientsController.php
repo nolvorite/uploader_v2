@@ -279,7 +279,7 @@ class PatientsController extends Controller
 
     public function create(Request $request)
     {
-        if (!Gate::allows('file_create')) {
+        if (!Gate::allows('new_patient')) {
             return abort(401);
         }
 

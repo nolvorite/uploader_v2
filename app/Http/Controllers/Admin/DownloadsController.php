@@ -15,16 +15,14 @@ use App\User;
 use Spatie\MediaLibrary\HasMedia\HasMediaTrait;
 use Spatie\MediaLibrary\HasMedia\Interfaces\HasMedia;
 use App\Folder;
+use Illuminate\Support\Facades\DB as DB;
 
 
 class DownloadsController extends Controller
 {
     public function download($uuid) {
 
-        $file = File::where([
-             ['uuid', '=', $uuid]
-            //,['created_by_id', '=', Auth::getUser()->id]
-            ])->first();
+        $file = DB::table('files')->where( 'uuid', $uuid )->first();
 
         $user = User::where(['id' => $file->created_by_id])->first();
 

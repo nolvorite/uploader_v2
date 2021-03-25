@@ -34,6 +34,7 @@
                     <td>
                         @if($ror->file_name2 !== null)
                         <a href="{{url('/storage/' . $ror->folder_creator2 . '/'. $ror->folder_name2 .'/' . $ror->relative_path2 .'/'. $ror->file_name2 )}}" target="_blank">{{ $ror->file_name2 }}</a>
+                        <a href="{{ url( 'admin/'. $ror->uuid . '/download') }}" class="btn btn-xs btn-primary">Download File</a> 
                         @else
                         <em>No remark files yet.</em>
                         @endif

@@ -101,15 +101,14 @@
             
             <?php endif; ?>
 
-            @can('file_access')
-            @can('patient_access')
+
+            @can('new_patient')
             <li class="{{ $request->segment(2) == 'patients' && preg_match("#create(\/)?$#",$request->getPathInfo()) ? 'active' : '' }}">
                 <a href="{{ url('admin/patients/create') }}">
                     <i class="fa fa-plus"></i>
                     <span class="title"><strong>New Patient Entry</strong></span>
                 </a>
             </li>
-            @endcan
             @endcan
 
             @can('file_manager')

@@ -106,7 +106,6 @@
                             <div class="progress-bar form-group">&nbsp;</div>
                             <div class="files-list"></div>
                         </div>
-                        <div id="drag_drop_box"></div>
                         @if($errors->has('filename'))
                             <p class="help-block">
                                 {{ $errors->first('filename') }}
